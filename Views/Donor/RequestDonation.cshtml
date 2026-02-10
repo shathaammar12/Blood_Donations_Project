@@ -1,0 +1,81 @@
+﻿@model Blood_Donations_Project.Models.Donor
+@using Blood_Donations_Project.Models
+
+@{
+    ViewData["Title"] = "Request Donation";
+
+    string donorName = Model?.User?.FullName ?? "-";
+    string donorEmail = Model?.User?.Email ?? "-";
+    string donorMobile = Model?.User?.MobileNo ?? "-";
+    string bloodType = Model?.BloodType?.TypeName ?? "-";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Request Donation</h2>
+        <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-outline-secondary">Back to Dashboard</a>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card border-danger shadow-sm mb-4">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">Your Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded">
+                        <p class="mb-1"><strong>Name:</strong> @donorName</p>
+                        <p class="mb-1"><strong>Email:</strong> @donorEmail</p>
+                        <p class="mb-0"><strong>Mobile:</strong> @donorMobile</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 bg-light rounded">
+                        <p class="mb-2">
+                            <strong>Blood Type:</strong>
+                            <span class="badge bg-danger fs-6">@bloodType</span>
+                        </p>
+                        <p class="mb-0 text-muted">
+                            Your request will be reviewed by the admin.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0">Submit Donation Request</h5>
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="Donor" asp-action="RequestDonation" method="post">
+                @Html.AntiForgeryToken()
+
+                <p class="text-muted mb-3">
+                    Click submit to create a new donation request.
+                </p>
+
+                <button type="submit" class="btn btn-danger">
+                    Submit Request
+                </button>
+
+                <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-outline-secondary">
+                    Cancel
+                </a>
+
+            </form>
+        </div>
+    </div>
+
+</div>

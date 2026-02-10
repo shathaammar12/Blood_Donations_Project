@@ -1,0 +1,307 @@
+﻿@using Blood_Donations_Project.ViewModels
+@using Blood_Donations_Project.Models
+
+@{
+    int totalDonations = ViewBag.TotalDonations ?? 0;
+    int totalRequests = ViewBag.TotalRequests ?? 0;
+    int totalBloodRequests = ViewBag.TotalBloodRequests ?? 0;
+    int totalDonationRequests = ViewBag.TotalDonationRequests ?? 0;
+
+    var selectedTable = (ViewBag.SelectedTable as string) ?? "BloodRequests";
+    var selectedStatus = (ViewBag.SelectedStatus as string) ?? "Pending";
+
+    var bloodRequests = ViewBag.AdminRequests as List<BloodRequestRowTable> ?? new();
+    var donorRequests = ViewBag.DonorDonationRequests as List<DonationRequest> ?? new();
+
+    string FormatDate(DateOnly? d) => d.HasValue ? d.Value.ToString("dd/MM/yyyy") : "-";
+}
+
+<style>
+    .table-header-custom {
+        background-color: #dc3545 !important;
+        color: white;
+    }
+</style>
+
+<div class="container mt-4">
+    <h2 class="mb-4">Admin Dashboard</h2>
+
+    <!-- Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow h-100">
+                <div class="card-body text-center">
+                    <h6>Total Donations</h6>
+                    <h2>@totalDonations</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow h-100">
+                <div class="card-body text-center">
+                    <h6>Total Requests (All)</h6>
+                    <h2>@totalRequests</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-danger text-white shadow h-100">
+                <div class="card-body text-center">
+                    <h6>Total Blood Requests</h6>
+                    <h2>@totalBloodRequests</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-warning text-white shadow h-100">
+                <div class="card-body text-center">
+                    <h6>Total Donation Requests</h6>
+                    <h2>@totalDonationRequests</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form method="get" asp-controller="Admin" asp-action="Dashboard" class="row g-2 align-items-end mb-3">
+        <div class="col-md-4">
+            <label class="form-label">Table</label>
+            <select class="form-select" name="table" id="tableSelect" onchange="onTableChanged()">
+                <option value="BloodRequests" selected="@(selectedTable == "BloodRequests")">Blood Requests</option>
+                <option value="DonorRequests" selected="@(selectedTable == "DonorRequests")">Donor Requests</option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Status</label>
+            <select class="form-select" name="status" id="statusSelect">
+                <option value="All" selected="@(selectedStatus == "All")">All</option>
+                <option value="Pending" selected="@(selectedStatus == "Pending")">Pending</option>
+                <option value="Approved" selected="@(selectedStatus == "Approved")">Approved</option>
+                <option value="Rejected" selected="@(selectedStatus == "Rejected")">Rejected</option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-danger w-100">Apply</button>
+        </div>
+    </form>
+
+    <!-- Blood Requests Table -->
+    @if (selectedTable == "BloodRequests")
+    {
+        <div class="card shadow">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Blood Requests</h5>
+            </div>
+
+            <div class="card-body p-0">
+                <table class="table table-striped table-hover mb-0">
+                    <thead class="table-danger">
+                        <tr>
+                            <th>SN</th>
+                            <th>Hospital</th>
+                            <th>Blood Type</th>
+                            <th>Qty</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (bloodRequests.Any())
+                        {
+                            foreach (var r in bloodRequests)
+                            {
+                                <tr>
+                                    <td>@r.Id</td>
+                                    <td>@r.UserName</td>
+                                    <td>@r.BloodTypeName</td>
+                                    <td>@(r.Quantity ?? 0)</td>
+                                    <td>@FormatDate(r.RequestDate)</td>
+                                    <td>@(r.Status ?? "-")</td>
+
+                                    <td class="text-center">
+                                        @if ((r.Status ?? "").Trim().Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <button type="button"
+                                                    class="btn btn-success btn-sm btn-approve-blood me-1"
+                                                    data-id="@r.Id">
+                                                Approve
+                                            </button>
+
+                                            <button type="button"
+                                                    class="btn btn-danger btn-sm btn-reject-blood"
+                                                    data-id="@r.Id">
+                                                Reject
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-3 text-muted">No requests.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <!-- Donor Requests Table -->
+    @if (selectedTable == "DonorRequests")
+    {
+        <div class="card shadow">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">Donor Donation Requests</h5>
+            </div>
+
+            <div class="card-body p-0">
+                <table class="table table-striped table-hover mb-0">
+                    <thead class="table-danger">
+                        <tr>
+                            <th>SN</th>
+                            <th>Donor</th>
+                            <th>Request Date</th>
+                            <th>Status</th>
+                            <th>Decision Date</th>
+                            <th>Approved By</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @if (donorRequests.Any())
+                        {
+                            foreach (var r in donorRequests)
+                            {
+                                <tr>
+                                    <td>@r.Id</td>
+                                    <td>@(r.User?.FullName ?? "-")</td>
+                                    <td>@r.RequestDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@(r.Status ?? "-")</td>
+                                    <td>@FormatDate(r.ApprovedDate)</td>
+                                    <td>@(r.ApprovedByNavigation?.UserName ?? "-")</td>
+
+                                    <td class="text-center">
+                                        @if ((r.Status ?? "").Trim().Equals("Pending", StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <button type="button"
+                                                    class="btn btn-success btn-sm btn-approve-donor me-1"
+                                                    data-id="@r.Id">
+                                                Approve
+                                            </button>
+
+                                            <button type="button"
+                                                    class="btn btn-danger btn-sm btn-reject-donor"
+                                                    data-id="@r.Id">
+                                                Reject
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-3 text-muted">No donor requests.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+<script>
+    function onTableChanged() {
+        const statusSelect = document.getElementById('statusSelect');
+        if (statusSelect) statusSelect.value = 'Pending';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        function postAction(url, btn) {
+            if (!btn || btn.disabled) return;
+
+            const cell = btn.closest('td');
+            if (cell) {
+                cell.querySelectorAll('button').forEach(b => b.disabled = true);
+            } else {
+                btn.disabled = true;
+            }
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(r => r.json())
+                .then(res => {
+                    alert(res.message);
+                    if (res.success) location.reload();
+                    else {
+                        if (cell) cell.querySelectorAll('button').forEach(b => b.disabled = false);
+                        else btn.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('An error occurred');
+                    if (cell) cell.querySelectorAll('button').forEach(b => b.disabled = false);
+                    else btn.disabled = false;
+                });
+        }
+
+        // BLOOD REQUESTS
+        document.querySelectorAll('.btn-approve-blood').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = this.dataset.id;
+                if (!confirm('Are you sure you want to approve this blood request?')) return;
+                postAction('/Admin/ApproveBloodRequest?id=' + id, this);
+            });
+        });
+
+        document.querySelectorAll('.btn-reject-blood').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = this.dataset.id;
+                if (!confirm('Are you sure you want to reject this blood request?')) return;
+                postAction('/Admin/RejectBloodRequest?id=' + id, this);
+            });
+        });
+
+        // DONOR REQUESTS
+        document.querySelectorAll('.btn-approve-donor').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = this.dataset.id;
+                if (!confirm('Are you sure you want to approve this donor request?')) return;
+                postAction('/Admin/ApproveDonorRequest?id=' + id, this);
+            });
+        });
+
+        document.querySelectorAll('.btn-reject-donor').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = this.dataset.id;
+                if (!confirm('Are you sure you want to reject this donor request?')) return;
+                postAction('/Admin/RejectDonorRequest?id=' + id, this);
+            });
+        });
+
+    });
+</script>

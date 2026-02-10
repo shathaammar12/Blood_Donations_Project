@@ -1,0 +1,123 @@
+﻿@model Blood_Donations_Project.ViewModels.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-7">
+        <div class="card shadow">
+            <div class="card-body">
+
+                <h3 class="card-title text-center mb-4">Create Account</h3>
+
+                <form asp-action="Register" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <!-- Full Name -->
+                    <div class="mb-3">
+                        <label asp-for="FullName" class="form-label"></label>
+                        <input asp-for="FullName" class="form-control" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+
+                    <!-- Username -->
+                    <div class="mb-3">
+                        <label asp-for="UserName" class="form-label"></label>
+                        <input asp-for="UserName" class="form-control" />
+                        <span asp-validation-for="UserName" class="text-danger"></span>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label"></label>
+                        <input asp-for="Password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="mb-3">
+                        <label asp-for="ConfirmPassword" class="form-label"></label>
+                        <input asp-for="ConfirmPassword" class="form-control" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                    <!-- Mobile -->
+                    <div class="mb-3">
+                        <label asp-for="MobileNo" class="form-label"></label>
+                        <input asp-for="MobileNo" class="form-control" />
+                        <span asp-validation-for="MobileNo" class="text-danger"></span>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="mb-3">
+                        <label asp-for="Address" class="form-label"></label>
+                        <input asp-for="Address" class="form-control" />
+                        <span asp-validation-for="Address" class="text-danger"></span>
+                    </div>
+
+                    <!-- Role -->
+                    <div class="mb-3">
+                        <label asp-for="RoleId" class="form-label"></label>
+                        <select asp-for="RoleId" class="form-select" asp-items="ViewBag.Roles" id="roleSelect">
+                            <option value="">-- Select Role --</option>
+                        </select>
+                        <span asp-validation-for="RoleId" class="text-danger"></span>
+                    </div>
+
+                    <!-- Blood Type (Donor only) -->
+                    <div class="mb-3" id="bloodTypeDiv" style="display:none;">
+                        <label asp-for="BloodTypeId" class="form-label"></label>
+                        <select asp-for="BloodTypeId" class="form-select" asp-items="ViewBag.BloodTypes">
+                            <option value="">-- Select Blood Type --</option>
+                        </select>
+                        <span asp-validation-for="BloodTypeId" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger w-100">
+                        Register
+                    </button>
+                </form>
+
+                <div class="text-center mt-3">
+                    <span>Already have an account?</span>
+                    <a asp-action="Login" class="text-danger fw-bold">Login</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+
+        function toggleBloodType() {
+            const selectedRoleText = $("#roleSelect option:selected").text();
+
+            if (selectedRoleText === "Donor") {
+                $("#bloodTypeDiv").show();
+            } else {
+                $("#bloodTypeDiv").hide();
+                $("#BloodTypeId").val("");
+            }
+        }
+
+        toggleBloodType();
+
+        $("#roleSelect").change(function () {
+            toggleBloodType();
+        });
+    });
+</script>

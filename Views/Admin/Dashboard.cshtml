@@ -1,0 +1,31 @@
+﻿@using Blood_Donations_Project.ViewModels
+@using Blood_Donations_Project.Models
+@using Microsoft.AspNetCore.Http
+@{
+    ViewData["Title"] = "Dashboard";
+    var role = Context.Session.GetString("UserRole") ?? "";
+}
+@if (string.IsNullOrWhiteSpace(role))
+{
+    <div class="alert alert-warning mt-4">
+        You are not logged in. Please <a href="/Account/Login">login</a>.
+    </div>
+}
+else if (role == "Admin")
+{
+    <partial name="~/Views/Shared/_AdminDashboard.cshtml" />
+}
+else if (role == "Donor")
+{
+    <partial name="~/Views/Shared/_DonorDashboard.cshtml" />
+}
+else if (role == "Hospital" || role == "BloodBank")
+{
+    <partial name="~/Views/Shared/_HospitalDashboard.cshtml" />
+}
+else
+{
+    <div class="alert alert-secondary mt-4">
+        Unknown role: <strong>@role</strong>
+    </div>
+}
