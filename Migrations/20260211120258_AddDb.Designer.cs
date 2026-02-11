@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Blood_Donations_Project.Migrations
 {
     [DbContext(typeof(BloodDonationContext))]
-    [Migration("20260210130132_AddPasswordReset")]
-    partial class AddPasswordReset
+    [Migration("20260211120258_AddDb")]
+    partial class AddDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -235,6 +235,9 @@ namespace Blood_Donations_Project.Migrations
 
                     b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
 
                     b.Property<string>("MobileNo")
                         .HasMaxLength(100)

@@ -1,32 +1,24 @@
-﻿@model IEnumerable<Blood_Donations_Project.Models.BloodRequest>
-@using Blood_Donations_Project.Models
-
+﻿@using Blood_Donations_Project.Models
 @{
     ViewData["Title"] = "Hospital Dashboard";
-
     User? user = ViewBag.User as User;
-
     var bloodTypeMap = ViewBag.BloodTypeMap as Dictionary<int, string> ?? new Dictionary<int, string>();
+    var hospitalRequests = ViewBag.HospitalRequests as List<BloodRequest> ?? new List<BloodRequest>();
 
     string FormatDate(DateOnly? d) => d.HasValue ? d.Value.ToString("dd/MM/yyyy") : "-";
-
     string GetBloodTypeName(int? id)
     {
         if (!id.HasValue) return "-";
         return bloodTypeMap.TryGetValue(id.Value, out var name) ? name : id.Value.ToString();
     }
 }
-
 <div class="container mt-4">
-
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0">Hospital Dashboard</h2>
-
         <a asp-controller="Hospital" asp-action="RequestBlood" class="btn btn-danger">
             Request Blood
         </a>
     </div>
-
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -34,14 +26,12 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
-
     <div class="card shadow-sm">
         <div class="card-header">
             <strong>My Blood Requests</strong>
         </div>
-
         <div class="card-body">
-            @if (Model != null && Model.Any())
+            @if (hospitalRequests != null && hospitalRequests.Any())
             {
                 <div class="table-responsive">
                     <table class="table table-striped table-hover align-middle">
@@ -55,7 +45,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var r in Model)
+                            @foreach (var r in hospitalRequests)
                             {
                                 var st = r.Status ?? "";
                                 <tr>
@@ -95,6 +85,4 @@
             }
         </div>
     </div>
-
 </div>
-

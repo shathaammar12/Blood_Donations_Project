@@ -342,5 +342,99 @@ namespace Blood_Donations_Project.Controllers
             return RedirectToAction("Login");
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (!int.TryParse(userIdStr, out var userId))
+                return RedirectToAction("Login");
+
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null) return RedirectToAction("Login");
+
+            var vm = new Profile
+            {
+                UserId = user.UserId,
+                FullName = user.FullName,
+                UserName = user.UserName,
+                Email = user.Email,
+                MobileNo = user.MobileNo,
+                Address = user.Address,
+                RoleName = user.Role?.RoleName
+            };
+
+            if (string.Equals(vm.RoleName, "Donor", StringComparison.OrdinalIgnoreCase))
+            {
+                var donor = await _context.Donors
+                    .Include(d => d.BloodType)
+                    .FirstOrDefaultAsync(d => d.UserId == userId);
+
+                vm.BloodTypeId = donor?.BloodTypeId;
+                vm.BloodTypeName = donor?.BloodType?.TypeName;
+
+                ViewBag.BloodTypes = await _context.BloodTypes
+                    .Select(bt => new { bt.BloodTypeId, bt.TypeName })
+                    .ToListAsync();
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Profile(Profile model)
+        {
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (!int.TryParse(userIdStr, out var userId))
+                return RedirectToAction("Login");
+
+            if (model.UserId != userId) return Forbid();
+
+            var roleName = HttpContext.Session.GetString("UserRole") ?? "";
+
+            if (string.Equals(roleName, "Donor", StringComparison.OrdinalIgnoreCase))
+            {
+                if (!model.BloodTypeId.HasValue)
+                    ModelState.AddModelError(nameof(model.BloodTypeId), "Blood type is required.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                if (string.Equals(roleName, "Donor", StringComparison.OrdinalIgnoreCase))
+                {
+                    ViewBag.BloodTypes = await _context.BloodTypes
+                        .Select(bt => new { bt.BloodTypeId, bt.TypeName })
+                        .ToListAsync();
+                }
+                model.RoleName = roleName;
+                return View(model);
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null) return RedirectToAction("Login");
+
+            user.FullName = model.FullName;
+            user.Email = model.Email;
+            user.MobileNo = model.MobileNo;
+            user.Address = model.Address;
+
+            if (string.Equals(roleName, "Donor", StringComparison.OrdinalIgnoreCase))
+            {
+                var donor = await _context.Donors.FirstOrDefaultAsync(d => d.UserId == userId);
+                if (donor != null)
+                {
+                    donor.BloodTypeId = model.BloodTypeId!.Value;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Profile updated successfully.";
+            return RedirectToAction("Profile");
+        }
+
     }
 }

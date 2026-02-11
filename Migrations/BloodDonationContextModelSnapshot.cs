@@ -233,6 +233,9 @@ namespace Blood_Donations_Project.Migrations
                     b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsAvailable")
+                        .HasColumnType("bit");
+
                     b.Property<string>("MobileNo")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");

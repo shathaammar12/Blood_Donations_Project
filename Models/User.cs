@@ -12,7 +12,7 @@ public partial class User
     public string? FullName { get; set; }
 
     public string? Email { get; set; }
-
+    public bool IsAvailable { get; set; }
     public string? Address { get; set; }
 
     public string? MobileNo { get; set; }

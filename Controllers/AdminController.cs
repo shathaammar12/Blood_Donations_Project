@@ -86,13 +86,13 @@ namespace Blood_Donations_Project.Controllers
 
             if (role == "Hospital" || role == "BloodBank")
             {
+                ViewBag.BloodTypeMap = await _context.BloodTypes
+            .ToDictionaryAsync(bt => bt.BloodTypeId, bt => bt.TypeName);
+
                 ViewBag.HospitalRequests = await _context.BloodRequests
                     .Where(br => br.UserId == userId)
                     .OrderByDescending(br => br.Id)
                     .ToListAsync();
-
-                ViewBag.BloodTypeMap = await _context.BloodTypes
-                    .ToDictionaryAsync(bt => bt.BloodTypeId, bt => bt.TypeName);
             }
 
             if (role == "Donor")

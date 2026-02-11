@@ -6,7 +6,7 @@
 
     body {
         display: flex;
-        flex-direction:column;
+        flex-direction: column;
     }
 
     main {
@@ -42,6 +42,7 @@
         bool isDashboardActive = (currentController == "Admin" && currentAction == "Dashboard");
         bool isLoginActive = (currentController == "Account" && currentAction == "Login");
         bool isRegisterActive = (currentController == "Account" && currentAction == "Register");
+        bool isProfileActive = (currentController == "Account" && currentAction == "Profile");
     }
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-danger shadow">
@@ -61,10 +62,10 @@
                 <ul class="navbar-nav me-auto">
                     @if (isLoggedIn)
                     {
-                        <li class="nav-item">
-                            <a class="nav-link @(isDashboardActive ? "active" : "")"
-                               href="/Admin/Dashboard">Dashboard</a>
-                        </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(isDashboardActive ? "active" : "")"
+                                   href="/Admin/Dashboard">Dashboard</a>
+                            </li>
                     }
                 </ul>
 
@@ -72,28 +73,34 @@
                 <ul class="navbar-nav ms-auto">
                     @if (!isLoggedIn)
                     {
-                        <li class="nav-item">
-                            <a class="nav-link @(isLoginActive ? "active" : "")"
-                               href="/Account/Login">Login</a>
-                        </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(isLoginActive ? "active" : "")"
+                                   href="/Account/Login">Login</a>
+                            </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link @(isRegisterActive ? "active" : "")"
-                               href="/Account/Register">Register</a>
-                        </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(isRegisterActive ? "active" : "")"
+                                   href="/Account/Register">Register</a>
+                            </li>
                     }
                     else
                     {
-                        <li class="nav-item">
-                            <a class="nav-link" href="/Account/Logout">Logout</a>
-                        </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(isProfileActive ? "active" : "")"
+                                   href="/Account/Profile">
+                                    My Profile
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Account/Logout">Logout</a>
+                            </li>
                     }
                 </ul>
 
             </div>
         </div>
     </nav>
-
 
     <!-- Main content -->
     <main class="container mt-4">
