@@ -26,6 +26,11 @@
 <div class="container mt-4">
     <h2 class="mb-4">Admin Dashboard</h2>
 
+    <div class="mb-3">
+        <a class="btn btn-outline-danger" href="/Admin/Users">Manage Users</a>
+    </div>
+
+
     <!-- Cards -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
@@ -233,7 +238,7 @@
 <script>
     function onTableChanged() {
         const statusSelect = document.getElementById('statusSelect');
-        if (statusSelect) statusSelect.value = 'Pending';
+        if (statusSelect) statusSelect.value = 'All';
     }
 
     document.addEventListener('DOMContentLoaded', function () {

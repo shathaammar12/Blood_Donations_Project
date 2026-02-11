@@ -1,0 +1,76 @@
+﻿@model Blood_Donations_Project.ViewModels.EditUser
+
+@{
+    ViewData["Title"] = "Edit User";
+    var roles = ViewBag.Roles as dynamic ?? new List<dynamic>();
+}
+
+<div class="container mt-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="mb-0">Edit User</h2>
+        <a class="btn btn-secondary" asp-controller="Admin" asp-action="Dashboard">Back</a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">Update User Info</h5>
+        </div>
+
+        <div class="card-body">
+            <form asp-controller="Admin" asp-action="EditUser" method="post">
+                @Html.AntiForgeryToken()
+
+                <input type="hidden" asp-for="UserId" />
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Full Name</label>
+                        <input class="form-control" asp-for="FullName" />
+                        <span class="text-danger" asp-validation-for="FullName"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Username</label>
+                        <input class="form-control" asp-for="UserName" />
+                        <span class="text-danger" asp-validation-for="UserName"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input class="form-control" asp-for="Email" />
+                        <span class="text-danger" asp-validation-for="Email"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Mobile</label>
+                        <input class="form-control" asp-for="MobileNo" />
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">Address</label>
+                        <input class="form-control" asp-for="Address" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">User Type</label>
+                        <select class="form-select" asp-for="RoleId">
+                            @foreach (var r in roles)
+                            {
+                                <option value="@r.RoleId" selected="@(Model.RoleId == (int)r.RoleId)">
+                                    @r.RoleName
+                                </option>
+                            }
+                        </select>
+                        <span class="text-danger" asp-validation-for="RoleId"></span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-danger mt-3">Save</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

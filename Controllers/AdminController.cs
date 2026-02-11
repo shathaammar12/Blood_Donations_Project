@@ -15,7 +15,13 @@ namespace Blood_Donations_Project.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Dashboard(string table = "BloodRequests", string status = "Pending")
+        private bool IsAdmin()
+        {
+            var role = HttpContext.Session.GetString("UserRole") ?? "";
+            return role == "Admin";
+        }
+
+        public async Task<IActionResult> Dashboard(string table = "BloodRequests", string status = "All")
         {
             var userIdStr = HttpContext.Session.GetString("UserId");
             var role = HttpContext.Session.GetString("UserRole");
@@ -34,7 +40,7 @@ namespace Blood_Donations_Project.Controllers
             if (role == "Admin")
             {
                 table = (table ?? "BloodRequests").Trim();
-                status = (status ?? "Pending").Trim();
+                status = (status ?? "All").Trim();
 
                 ViewBag.SelectedTable = table;
                 ViewBag.SelectedStatus = status;
@@ -135,6 +141,92 @@ namespace Blood_Donations_Project.Controllers
 
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Users()
+        {
+            if (!IsAdmin()) return RedirectToAction("Dashboard", "Home");
+
+            var users = await _context.Users
+                .Include(u => u.Role)
+                .Include(u => u.Donors).ThenInclude(d => d.BloodType)
+                .Where(u => u.Role != null && u.Role.RoleName != "Admin")
+                .Select(u => new AdminUserRow
+                {
+                    UserId = u.UserId,
+                    FullName = u.FullName,
+                    UserName = u.UserName,
+                    Email = u.Email,
+                    MobileNo = u.MobileNo,
+                    Address = u.Address,
+
+                    RoleName = u.Role != null ? u.Role.RoleName : null,
+
+                    BloodTypeName = u.Donors
+                        .Select(d => d.BloodType.TypeName)
+                        .FirstOrDefault()
+                })
+                .OrderBy(u => u.UserId)
+                .ToListAsync();
+
+            return View(users);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditUser(int id)
+        {
+            if (!IsAdmin()) return RedirectToAction("Dashboard", "Home");
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
+            if (user == null) return NotFound();
+
+            var roles = await _context.Roles
+                .Select(r => new { r.RoleId, r.RoleName })
+                .ToListAsync();
+            ViewBag.Roles = roles;
+
+            var model = new EditUser
+            {
+                UserId = user.UserId,
+                FullName = user.FullName,
+                UserName = user.UserName,
+                Email = user.Email,
+                MobileNo = user.MobileNo,
+                Address = user.Address,
+                RoleId = user.RoleId
+            };
+
+            return View(model);
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditUser(EditUser model)
+        {
+            if (!IsAdmin()) return RedirectToAction("Dashboard", "Home");
+
+            var roles = await _context.Roles
+                .Select(r => new { r.RoleId, r.RoleName })
+                .ToListAsync();
+            ViewBag.Roles = roles;
+
+            if (!ModelState.IsValid) return View(model);
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == model.UserId);
+            if (user == null) return NotFound();
+
+            user.FullName = model.FullName;
+            user.UserName = model.UserName;
+            user.Email = model.Email;
+            user.MobileNo = model.MobileNo;
+            user.Address = model.Address;
+            user.RoleId = model.RoleId;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "User updated successfully.";
+            return RedirectToAction(nameof(Users));
+        }
 
         public async Task<IActionResult> ManageDonations()
         {
