@@ -62,12 +62,26 @@
                 <ul class="navbar-nav me-auto">
                     @if (isLoggedIn)
                     {
+                        <li class="nav-item">
+                            <a class="nav-link @(isDashboardActive ? "active" : "")"
+                               href="/Admin/Dashboard">Home</a>
+                        </li>
+
+                        @if (role == "Admin")
+                        {
                             <li class="nav-item">
-                                <a class="nav-link @(isDashboardActive ? "active" : "")"
-                                   href="/Admin/Dashboard">Dashboard</a>
+                                <a class="nav-link @(currentController == "Admin" && currentAction == "Users" ? "active" : "")"
+                                   href="/Admin/Users">Users</a>
                             </li>
+
+                            <li class="nav-item">
+                                <a class="nav-link @(currentController == "Admin" && currentAction == "BloodAvailability" ? "active" : "")"
+                                   href="/Admin/BloodAvailability">Blood Availability</a>
+                            </li>
+                        }
                     }
                 </ul>
+
 
                 <!-- Right -->
                 <ul class="navbar-nav ms-auto">
