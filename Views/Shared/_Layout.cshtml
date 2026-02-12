@@ -71,32 +71,21 @@
 
                 <!-- Right -->
                 <ul class="navbar-nav ms-auto">
-                    @if (!isLoggedIn)
+                    @if (isLoggedIn)
                     {
-                            <li class="nav-item">
-                                <a class="nav-link @(isLoginActive ? "active" : "")"
-                                   href="/Account/Login">Login</a>
-                            </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(isProfileActive ? "active" : "")"
+                               href="/Account/Profile">
+                                My Profile
+                            </a>
+                        </li>
 
-                            <li class="nav-item">
-                                <a class="nav-link @(isRegisterActive ? "active" : "")"
-                                   href="/Account/Register">Register</a>
-                            </li>
-                    }
-                    else
-                    {
-                            <li class="nav-item">
-                                <a class="nav-link @(isProfileActive ? "active" : "")"
-                                   href="/Account/Profile">
-                                    My Profile
-                                </a>
-                            </li>
-
-                            <li class="nav-item">
-                                <a class="nav-link" href="/Account/Logout">Logout</a>
-                            </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Account/Logout">Logout</a>
+                        </li>
                     }
                 </ul>
+
 
             </div>
         </div>

@@ -24,15 +24,15 @@
 
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label">Full Name</label>
-                        <input class="form-control" asp-for="FullName" />
-                        <span class="text-danger" asp-validation-for="FullName"></span>
+                        <label class="form-label">UserName</label>
+                        <input class="form-control" asp-for="UserName" />
+                        <span class="text-danger" asp-validation-for="UserName"></span>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Username</label>
-                        <input class="form-control" asp-for="UserName" />
-                        <span class="text-danger" asp-validation-for="UserName"></span>
+                        <label class="form-label">Full Name</label>
+                        <input class="form-control" asp-for="FullName" />
+                        <span class="text-danger" asp-validation-for="FullName"></span>
                     </div>
 
                     <div class="col-md-6">
@@ -42,7 +42,7 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Mobile</label>
+                        <label class="form-label">Mobile No</label>
                         <input class="form-control" asp-for="MobileNo" />
                     </div>
 
@@ -52,7 +52,7 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">User Type</label>
+                        <label class="form-label">Role</label>
                         <select class="form-select" asp-for="RoleId">
                             @foreach (var r in roles)
                             {

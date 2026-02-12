@@ -29,6 +29,8 @@ namespace Blood_Donations_Project.Services
 
                 await SeedAdminUser(context, logger);
 
+                await SeedBloodTypes(context, logger);
+
                 logger.LogInformation("Database seeding completed successfully!");
             }
             catch (Exception ex)
@@ -67,6 +69,40 @@ namespace Blood_Donations_Project.Services
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error seeding roles: {Message}", ex.Message);
+            }
+        }
+
+        private static async Task SeedBloodTypes(BloodDonationContext context, ILogger logger)
+        {
+            try
+            {
+                logger.LogInformation("Seeding blood types (add missing only)...");
+
+                var required = new[] { "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-" };
+
+                var existing = await context.BloodTypes
+                    .Select(b => b.TypeName)
+                    .ToListAsync();
+
+                var missing = required
+                    .Where(t => !existing.Contains(t))
+                    .Select(t => new BloodType { TypeName = t })
+                    .ToList();
+
+                if (!missing.Any())
+                {
+                    logger.LogInformation("All blood types already exist. Skipping...");
+                    return;
+                }
+
+                await context.BloodTypes.AddRangeAsync(missing);
+                await context.SaveChangesAsync();
+
+                logger.LogInformation($"Added {missing.Count} missing blood types successfully!");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error seeding blood types: {Message}", ex.Message);
             }
         }
 

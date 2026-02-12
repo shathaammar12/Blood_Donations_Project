@@ -2,7 +2,7 @@
 @using Blood_Donations_Project.Models
 @using Microsoft.AspNetCore.Http
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "Home";
     var role = Context.Session.GetString("UserRole") ?? "";
 }
 @if (string.IsNullOrWhiteSpace(role))
@@ -17,8 +17,10 @@ else if (role == "Admin")
 }
 else if (role == "Donor")
 {
-    <partial name="~/Views/Shared/_DonorDashboard.cshtml" />
+    <partial name="~/Views/Shared/_DonorDashboard.cshtml"
+             model="(IEnumerable<DonationRequest>)ViewBag.DonorRequests" />
 }
+
 else if (role == "Hospital" || role == "BloodBank")
 {
     <partial name="~/Views/Shared/_HospitalDashboard.cshtml" />

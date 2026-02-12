@@ -122,11 +122,14 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @{
+                                int sn = 1;
+                             }
                             @foreach (var r in Model)
                             {
                                 var st = r.Status ?? "";
                                 <tr>
-                                    <td>@r.Id</td>
+                                    <td>@sn</td>
                                     <td>@r.RequestDate.ToString("dd/MM/yyyy")</td>
                                     <td>
                                         @if (st.Equals("Pending", StringComparison.OrdinalIgnoreCase))
@@ -149,6 +152,7 @@
                                     <td>@FormatDate(r.ApprovedDate)</td>
                                     <td>@(r.ApprovedByNavigation?.UserName ?? "-")</td>
                                 </tr>
+                                sn++;
                             }
                         </tbody>
                     </table>

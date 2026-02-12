@@ -37,7 +37,7 @@
                     <table class="table table-striped table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>#</th>
+                                <th>SN</th>
                                 <th>Blood Type</th>
                                 <th>Quantity</th>
                                 <th>Status</th>
@@ -45,11 +45,14 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @{
+                                int sn = 1;
+                            }
                             @foreach (var r in hospitalRequests)
                             {
                                 var st = r.Status ?? "";
                                 <tr>
-                                    <td>@r.Id</td>
+                                    <td>@sn</td>
                                     <td><span class="badge bg-danger">@GetBloodTypeName(r.BloodTypeId)</span></td>
                                     <td>@(r.Quantity?.ToString() ?? "-")</td>
                                     <td>
@@ -72,6 +75,7 @@
                                     </td>
                                     <td>@FormatDate(r.RequestDate)</td>
                                 </tr>
+                                sn++;
                             }
                         </tbody>
                     </table>
