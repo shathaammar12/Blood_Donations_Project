@@ -1,0 +1,60 @@
+﻿@model List<Blood_Donations_Project.Models.BloodInventory>
+
+@{
+    ViewData["Title"] = "Blood Availability";
+    int sn = 1;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Blood Availability</h2>
+
+        <a class="btn btn-outline-danger" href="/Admin/Dashboard">
+            Back to Dashboard
+        </a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">Current Stock</h5>
+        </div>
+
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="table-danger">
+                    <tr>
+                        <th>SN</th>
+                        <th>Blood Type</th>
+                        <th>Units Available</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@sn</td>
+                                <td>
+                                    <span class="badge bg-danger">
+                                        @item.BloodType?.TypeName
+                                    </span>
+                                </td>
+                                <td>@item.UnitsAvailable</td>
+                            </tr>
+                            sn++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="text-center py-3 text-muted">
+                                No inventory data.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

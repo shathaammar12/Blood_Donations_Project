@@ -346,6 +346,20 @@ namespace Blood_Donations_Project.Controllers
 
             req.Status = "Approved";
 
+            var units = req.Quantity ?? 0;
+
+            var inventory = await _context.BloodInventories
+                .FirstOrDefaultAsync(i => i.BloodTypeId == req.BloodTypeId);
+
+            if (inventory == null)
+                return Json(new { success = false, message = "Inventory not found" });
+
+            if (inventory.UnitsAvailable < units)
+                return Json(new { success = false, message = "Not enough blood units available" });
+
+            inventory.UnitsAvailable -= units;
+
+
             await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Request approved successfully" });
@@ -395,8 +409,16 @@ namespace Blood_Donations_Project.Controllers
             });
 
             var donor = await _context.Donors.FirstOrDefaultAsync(d => d.UserId == req.UserId);
-            if (donor != null)
-                donor.LastDonationDate = DateOnly.FromDateTime(DateTime.Now);
+            if (donor?.BloodTypeId != null)
+            {
+                var inventory = await _context.BloodInventories
+                    .FirstOrDefaultAsync(i => i.BloodTypeId == donor.BloodTypeId);
+
+                if (inventory != null)
+                {
+                    inventory.UnitsAvailable += 1;
+                }
+            }
 
             await _context.SaveChangesAsync();
             return Json(new { success = true, message = "Donor request approved" });
@@ -448,6 +470,19 @@ namespace Blood_Donations_Project.Controllers
             ViewBag.RejectedRequests = await _context.BloodRequests.CountAsync(br => br.Status == "Rejected");
 
             return View();
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> BloodAvailability()
+        {
+            if (!IsAdmin()) return RedirectToAction("Dashboard", "Home");
+
+            var stock = await _context.BloodInventories
+                .Include(i => i.BloodType)
+                .OrderBy(i => i.BloodType!.TypeName)
+                .ToListAsync();
+
+            return View(stock);
         }
     }
 }

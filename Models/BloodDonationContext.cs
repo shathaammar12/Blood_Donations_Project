@@ -33,6 +33,9 @@ public partial class BloodDonationContext : DbContext
     public virtual DbSet<DonationRequest> DonationRequests { get; set; }
 
     public DbSet<PasswordReset> PasswordReset { get; set; }
+
+    public DbSet<BloodInventory> BloodInventories { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         //base.OnModelCreating(modelBuilder);

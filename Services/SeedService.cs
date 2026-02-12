@@ -31,6 +31,8 @@ namespace Blood_Donations_Project.Services
 
                 await SeedBloodTypes(context, logger);
 
+                await SeedBloodInventory(context, logger);
+
                 logger.LogInformation("Database seeding completed successfully!");
             }
             catch (Exception ex)
@@ -156,5 +158,36 @@ namespace Blood_Donations_Project.Services
                 logger.LogError(ex, "Error seeding admin user: {Message}", ex.Message);
             }
         }
+
+        private static async Task SeedBloodInventory(BloodDonationContext context, ILogger logger)
+        {
+            try
+            {
+                var bloodTypes = await context.BloodTypes.ToListAsync();
+
+                foreach (var bt in bloodTypes)
+                {
+                    var exists = await context.BloodInventories
+                        .AnyAsync(i => i.BloodTypeId == bt.BloodTypeId);
+
+                    if (!exists)
+                    {
+                        await context.BloodInventories.AddAsync(new BloodInventory
+                        {
+                            BloodTypeId = bt.BloodTypeId,
+                            UnitsAvailable = 0
+                        });
+                    }
+                }
+
+                await context.SaveChangesAsync();
+                logger.LogInformation("Blood inventory seeded successfully!");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error seeding inventory: {Message}", ex.Message);
+            }
+        }
+
     }
 }
