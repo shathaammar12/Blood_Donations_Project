@@ -15,14 +15,12 @@ namespace Blood_Donations_Project.Controllers
     public class AccountController : Controller
     {
         private readonly BloodDonationContext _context;
-        private readonly IAuthService _authService;
         private readonly IConfiguration _config;
 
 
-        public AccountController(BloodDonationContext context, IAuthService authService, IConfiguration config)
+        public AccountController(BloodDonationContext context, IConfiguration config)
         {
             _context = context;
-            _authService = authService;
             _config = config;
         }
 

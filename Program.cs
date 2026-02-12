@@ -53,7 +53,6 @@ namespace Blood_Donations_Project
             };
         });
 
-            builder.Services.AddScoped<IAuthService, AuthService>();
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
