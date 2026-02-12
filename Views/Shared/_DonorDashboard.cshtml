@@ -60,7 +60,7 @@
                     <div class="p-3 bg-light rounded">
                         <p class="mb-1"><strong>Name:</strong> @donorName</p>
                         <p class="mb-1"><strong>Email:</strong> @donorEmail</p>
-                        <p class="mb-0"><strong>Mobile:</strong> @donorMobile</p>
+                        <p class="mb-0"><strong>Mobile No:</strong> @donorMobile</p>
                     </div>
                 </div>
 
@@ -99,15 +99,13 @@
             </div>
         </div>
     </div>
-
     <!-- Requests Table -->
-    <div class="card shadow-sm">
-        <div class="card-header d-flex align-items-center justify-content-between">
-            <h5 class="mb-0">My Donation Requests</h5>
-            <span class="text-muted small">Latest first</span>
+    <div class="card shadow-sm border-danger border-2">
+        <div class="card-header d-flex align-items-center justify-content-between bg-danger text-white">
+            <h5 class="mb-0 ">My Donation Requests</h5>
         </div>
 
-        <div class="card-body">
+        <div class="card-body border-danger border-2">
             @if (Model != null && Model.Any())
             {
                 <div class="table-responsive">

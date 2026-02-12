@@ -14,7 +14,7 @@
         <div class="alert alert-success">@TempData["Success"]</div>
     }
 
-    <div class="card shadow">
+    <div class="card shadow border-danger border-2">
         <div class="card-header bg-danger text-white">
             <h5 class="mb-0">All Users</h5>
         </div>
@@ -52,7 +52,7 @@
                                 <td>@(u.RoleName ?? "-")</td>
                                 <td>@(u.BloodTypeName ?? "-")</td>
                                 <td class="text-center">
-                                    <a class="btn btn-primary btn-sm"
+                                    <a class="btn btn-danger btn-sm"
                                        asp-controller="Admin"
                                        asp-action="EditUser"
                                        asp-route-id="@u.UserId">
