@@ -4,8 +4,8 @@ namespace Blood_Donations_Project.ViewModels
 {
     public class RegisterViewModel
     {
-        [Required(ErrorMessage = "Role is required")]
-        public int RoleId { get; set; } // 2=Donor, 3=Hospital, 4=BloodBank
+        //[Required(ErrorMessage = "Role is required")]
+        //public int RoleId { get; set; } // 2=Donor, 3=Hospital, 4=BloodBank
 
         [Required(ErrorMessage = "Username is required")]
         [StringLength(100)]
@@ -36,9 +36,14 @@ namespace Blood_Donations_Project.ViewModels
         [StringLength(100)]
         public string Address { get; set; }
 
-        //public DateTime LastDonationDate { get; set; }
-        //public bool IsAvailable { get; set; }
+        [Required(ErrorMessage = "Date of Birth is required")]
+        [DataType(DataType.Date)]
+        public DateTime? DateOfBirth { get; set; }
+
+        [StringLength(500, ErrorMessage = "Max 500 characters")]
+        public string? HealthStatus { get; set; }
+
+        [Required(ErrorMessage = "Blood type is required")]
         public int? BloodTypeId { get; set; }
-        /*public int? Quantity { get; set; }*/
     }
 }

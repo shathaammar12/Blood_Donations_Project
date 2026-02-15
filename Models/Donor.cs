@@ -15,6 +15,11 @@ public partial class Donor
 
     public bool? IsAvailable { get; set; }
 
+    public bool IsMedicalVerified { get; set; } = false;
+    public int? MedicalVerifiedBy { get; set; }
+    public DateOnly? MedicalVerifiedDate { get; set; }
+    public string? HealthStatus { get; set; }
+
     public virtual BloodType? BloodType { get; set; }
 
     public virtual User? User { get; set; }

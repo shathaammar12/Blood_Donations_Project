@@ -1,123 +1,290 @@
 ﻿@model Blood_Donations_Project.ViewModels.RegisterViewModel
-
 @{
     ViewData["Title"] = "Register";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-7">
-        <div class="card shadow">
-            <div class="card-body">
+<style>
+    .auth-page {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+    }
 
-                <h3 class="card-title text-center mb-4">Create Account</h3>
+    .auth-card {
+        width: 100%;
+        overflow: hidden;
+    }
 
-                <form asp-action="Register" method="post">
-                    @Html.AntiForgeryToken()
+    /* ===== Scroll only the form area (right side), not the whole right column ===== */
+    .auth-form-scroll {
+        overflow-y: auto;
+        padding-right: 6px;
+    }
 
-                    <!-- Username -->
-                    <div class="mb-3">
-                        <label asp-for="UserName" class="form-label">User Name</label>
-                        <input asp-for="UserName" class="form-control" />
-                        <span asp-validation-for="UserName" class="text-danger"></span>
+        /* Nice thin scrollbar */
+        .auth-form-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .auth-form-scroll::-webkit-scrollbar-thumb {
+            background: rgba(90,15,27,.25);
+            border-radius: 10px;
+        }
+
+        .auth-form-scroll::-webkit-scrollbar-track {
+            background: rgba(90,15,27,.06);
+            border-radius: 10px;
+        }
+
+    @@media (min-width: 992px) {
+
+        .auth-card {
+            height: 90vh;
+            max-height: 90vh;
+        }
+
+        .auth-right {
+            height: 90vh;
+            overflow: hidden; /* keep header fixed, scroll only inside box */
+            padding: 22px 28px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .auth-left {
+            height: 90vh;
+        }
+        /* This makes the scroll area take the remaining height under title */
+        .auth-form-scroll {
+            flex: 1;
+            max-height: calc(90vh - 120px); /* safe space for title + footer links */
+        }
+
+        .auth-form .mb-3 {
+            margin-bottom: .4rem !important;
+        }
+
+        .auth-form .form-control,
+        .auth-form .form-select {
+            height: 34px !important;
+            font-size: 0.83rem !important;
+            padding: .3rem .55rem !important;
+        }
+
+        .auth-form .form-label {
+            font-size: 0.82rem !important;
+            margin-bottom: .2rem !important;
+        }
+
+        .auth-form textarea.form-control {
+            height: 44px !important;
+            font-size: 0.83rem !important;
+            padding: .3rem .55rem !important;
+            resize: none;
+        }
+
+        .auth-title {
+            font-size: 1.1rem;
+            margin-bottom: .2rem;
+        }
+
+        .auth-muted {
+            font-size: 0.85rem;
+            margin-bottom: .7rem !important;
+        }
+
+        .btn-wine {
+            padding: .45rem .7rem !important;
+            font-size: 0.88rem !important;
+        }
+    }
+
+    @@media (max-width: 991.98px) {
+        .auth-page {
+            display: block;
+            padding: 24px 0;
+        }
+
+        .auth-card {
+            height: auto;
+        }
+
+        .auth-right {
+            height: auto;
+            overflow: visible;
+            display: block;
+        }
+
+        .auth-form-scroll {
+            max-height: none;
+            overflow: visible;
+            padding-right: 0;
+        }
+    }
+
+    .auth-form .form-control:focus,
+    .auth-form .form-select:focus {
+        border-color: #5A0F1B !important;
+        box-shadow: 0 0 0 0.2rem rgba(90, 15, 27, 0.25) !important;
+    }
+
+    .auth-form .form-select {
+        border-color: rgba(90, 15, 27, 0.35);
+    }
+
+    .auth-form input[type="date"].form-control:focus {
+        border-color: #5A0F1B !important;
+        box-shadow: 0 0 0 0.2rem rgba(90, 15, 27, 0.25) !important;
+    }
+
+    .auth-form .form-check-input:checked {
+        background-color: #5A0F1B !important;
+        border-color: #5A0F1B !important;
+    }
+
+    .auth-form .form-check-input:focus {
+        border-color: #5A0F1B !important;
+        box-shadow: 0 0 0 0.2rem rgba(90, 15, 27, 0.25) !important;
+    }
+</style>
+
+<div class="auth-page">
+    <div class="container">
+        <div class="auth-card row g-0">
+            <div class="col-lg-6 auth-left d-flex align-items-end">
+                <div class="p-4 p-lg-5">
+                    <div class="auth-brand-badge mb-3">
+                        <i class="bi bi-droplet-half"></i>
+                        <span>Blood Donation System</span>
                     </div>
 
-                    <!-- Full Name -->
-                    <div class="mb-3">
-                        <label asp-for="FullName" class="form-label">Full Name</label>
-                        <input asp-for="FullName" class="form-control" />
-                        <span asp-validation-for="FullName" class="text-danger"></span>
-                    </div>
+                    <h1 class="auth-slogan font-special">
+                        Your Blood Can Bring Smile In Any One Person Face
+                    </h1>
 
-                    <!-- Email -->
-                    <div class="mb-3">
-                        <label asp-for="Email" class="form-label">Email</label>
-                        <input asp-for="Email" class="form-control" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
+                    <p class="auth-sub mb-0">
+                        Register as a donor and help save lives.
+                    </p>
+                </div>
+            </div>
 
-                    <!-- Password -->
-                    <div class="mb-3">
-                        <label asp-for="Password" class="form-label">Password</label>
-                        <input asp-for="Password" class="form-control" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
-                    </div>
-
-                    <!-- Confirm Password -->
-                    <div class="mb-3">
-                        <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
-                        <input asp-for="ConfirmPassword" class="form-control" />
-                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
-                    </div>
-
-                    <!-- Mobile -->
-                    <div class="mb-3">
-                        <label asp-for="MobileNo" class="form-label">Mobile No</label>
-                        <input asp-for="MobileNo" class="form-control" />
-                        <span asp-validation-for="MobileNo" class="text-danger"></span>
-                    </div>
-
-                    <!-- Address -->
-                    <div class="mb-3">
-                        <label asp-for="Address" class="form-label">Address</label>
-                        <input asp-for="Address" class="form-control" />
-                        <span asp-validation-for="Address" class="text-danger"></span>
-                    </div>
-
-                    <!-- Role -->
-                    <div class="mb-3">
-                        <label asp-for="RoleId" class="form-label">Role</label>
-                        <select asp-for="RoleId" class="form-select" asp-items="ViewBag.Roles" id="roleSelect">
-                            <option value="">-- Select Role --</option>
-                        </select>
-                        <span asp-validation-for="RoleId" class="text-danger"></span>
-                    </div>
-
-                    <!-- Blood Type (Donor only) -->
-                    <div class="mb-3" id="bloodTypeDiv" style="display:none;">
-                        <label asp-for="BloodTypeId" class="form-label">Blood Type</label>
-                        <select asp-for="BloodTypeId" class="form-select" asp-items="ViewBag.BloodTypes">
-                            <option value="">-- Select Blood Type --</option>
-                        </select>
-                        <span asp-validation-for="BloodTypeId" class="text-danger"></span>
-                    </div>
-
-                    <button type="submit" class="btn btn-danger w-100">
-                        Register
-                    </button>
-                </form>
-
-                <div class="text-center mt-3">
-                    <span>Already have an account?</span>
-                    <a asp-action="Login" class="text-danger fw-bold">Login</a>
+            <div class="col-lg-6 auth-right">
+                <div>
+                    <h3 class="auth-title">Register as a Donor</h3>
+                    <p class="auth-muted mb-3">Create your account</p>
                 </div>
 
+                <div class="auth-form-scroll">
+                    <form asp-action="Register" method="post" class="auth-form">
+                        @Html.AntiForgeryToken()
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div class="alert alert-danger rounded-3 py-2">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                Please fix the errors below and try again.
+                            </div>
+                        }
+
+                        <div class="row g-2">
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FullName" class="form-label">Full Name</label>
+                                <input asp-for="FullName" class="form-control" />
+                                <span asp-validation-for="FullName" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="UserName" class="form-label">Username</label>
+                                <input asp-for="UserName" class="form-control" />
+                                <span asp-validation-for="UserName" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label asp-for="Email" class="form-label">Email</label>
+                                <input asp-for="Email" class="form-control" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="MobileNo" class="form-label">Mobile No</label>
+                                <input asp-for="MobileNo" class="form-control" />
+                                <span asp-validation-for="MobileNo" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DateOfBirth" class="form-label">Date of Birth</label>
+                                <input asp-for="DateOfBirth" type="date" class="form-control" />
+                                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Password" class="form-label">Password</label>
+                                <input asp-for="Password" type="password" class="form-control" autocomplete="new-password" />
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
+                                <input asp-for="ConfirmPassword" type="password" class="form-control" autocomplete="new-password" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="BloodTypeId" class="form-label">Blood Type</label>
+                                <select asp-for="BloodTypeId" class="form-select" asp-items="ViewBag.BloodTypes">
+                                    <option value="">Select Blood Type</option>
+                                </select>
+                                <span asp-validation-for="BloodTypeId" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label asp-for="Address" class="form-label">Address</label>
+                                <textarea asp-for="Address"
+                                          class="form-control"
+                                          rows="2"
+                                          style="resize:none;"></textarea>
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
+
+
+                            <div class="col-12 mb-3">
+                                <label asp-for="HealthStatus" class="form-label">
+                                    Health Status <span class="text-muted">(optional)</span>
+                                </label>
+                                <textarea asp-for="HealthStatus" class="form-control" rows="2"></textarea>
+                                <span asp-validation-for="HealthStatus" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-wine w-100 text-white">
+                                    Register
+                                </button>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+
+                <div class="text-center mt-3">
+                    <span class="text-muted">Already have an account?</span>
+                    <a asp-action="Login" class="link-wine fw-bold ms-1">Login</a>
+                </div>
             </div>
+
         </div>
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
-<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 
-<script>
-    $(document).ready(function () {
-
-        function toggleBloodType() {
-            const selectedRoleText = $("#roleSelect option:selected").text();
-
-            if (selectedRoleText === "Donor") {
-                $("#bloodTypeDiv").show();
-            } else {
-                $("#bloodTypeDiv").hide();
-                $("#BloodTypeId").val("");
-            }
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var firstError = document.querySelector(".input-validation-error");
+        if (firstError) {
+            firstError.focus();
         }
-
-        toggleBloodType();
-
-        $("#roleSelect").change(function () {
-            toggleBloodType();
-        });
     });
 </script>
+}

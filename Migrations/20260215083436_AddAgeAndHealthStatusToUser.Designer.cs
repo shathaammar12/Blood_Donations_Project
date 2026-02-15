@@ -4,6 +4,7 @@ using Blood_Donations_Project.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Blood_Donations_Project.Migrations
 {
     [DbContext(typeof(BloodDonationContext))]
-    partial class BloodDonationContextModelSnapshot : ModelSnapshot
+    [Migration("20260215083436_AddAgeAndHealthStatusToUser")]
+    partial class AddAgeAndHealthStatusToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -169,25 +172,10 @@ namespace Blood_Donations_Project.Migrations
                     b.Property<int?>("BloodTypeId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("HealthStatus")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool?>("IsAvailable")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsMedicalVerified")
-                        .HasColumnType("bit");
-
                     b.Property<DateOnly?>("LastDonationDate")
-                        .HasColumnType("date");
-
-                    b.Property<int?>("MedicalVerifiedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateOnly?>("MedicalVerifiedDate")
                         .HasColumnType("date");
 
                     b.Property<int?>("UserId")

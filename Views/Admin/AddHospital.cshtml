@@ -1,16 +1,13 @@
-﻿@model Blood_Donations_Project.ViewModels.EditUser
+﻿@model Blood_Donations_Project.ViewModels.HospitalCreate
 
 @{
-    ViewData["Title"] = "Edit User";
-    var roles = ViewBag.Roles as dynamic ?? new List<dynamic>();
-    var bloodTypes = ViewBag.BloodTypes as IEnumerable<dynamic> ?? new List<dynamic>();
+    ViewData["Title"] = "Add Hospital";
 }
 
 <style>
     :root {
         --wine: #5A0F1B;
         --wine-2: #7b1626;
-        --wine-soft: rgba(90,15,27,.06);
         --wine-border: rgba(90,15,27,.18);
     }
 
@@ -27,23 +24,9 @@
     }
 
         .card-wine .card-header {
-            background: linear-gradient(135deg, var(--wine), var(--wine-2));
+            background: linear-gradient(135deg,var(--wine),var(--wine-2));
             color: #fff;
             border-bottom: 0;
-        }
-
-    .text-wine {
-        color: var(--wine) !important;
-    }
-
-    .form-control, .form-select {
-        border-radius: 12px;
-        border-color: rgba(90,15,27,.25);
-    }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--wine);
-            box-shadow: 0 0 0 .2rem rgba(90,15,27,.18);
         }
 
     .btn-wine {
@@ -66,53 +49,41 @@
 
         .btn-outline-wine:hover {
             background: var(--wine);
-            border-color: var(--wine);
             color: #fff;
         }
 
-    .btn-icon {
-        width: 40px;
-        height: 40px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+    .form-control {
         border-radius: 12px;
-        padding: 0;
+        border-color: rgba(90,15,27,.25);
     }
+
+        .form-control:focus {
+            border-color: var(--wine);
+            box-shadow: 0 0 0 .2rem rgba(90,15,27,.18);
+        }
 </style>
 
 <div class="container mt-4">
 
-    <!-- Header -->
     <div class="d-flex align-items-center justify-content-between mb-3">
         <div>
-            <h2 class="mb-1 text-wine fw-bold">
-                <i class="bi bi-pencil-square me-2"></i> Edit User
+            <h2 class="mb-1" style="color:var(--wine); font-weight:800;">
+                <i class="bi bi-plus-circle me-2"></i> Add New Hospital
             </h2>
-            <div class="text-muted">Update user information</div>
-        </div>
-
-        <div class="d-flex gap-2">
-            <a class="btn btn-wine px-4 text-white"
-               asp-controller="Admin"
-               asp-action="Users">
-                Back
-            </a>
+            <div class="text-muted">Create hospital account</div>
         </div>
     </div>
 
     <div class="card card-wine">
         <div class="card-header">
-            <h5 class="mb-0">
-                <i class="bi bi-person-gear me-2"></i> Update User Info
-            </h5>
+            <h5 class="mb-0"><i class="bi bi-hospital me-2"></i> Hospital Info</h5>
         </div>
 
         <div class="card-body p-4">
-            <form asp-controller="Admin" asp-action="EditUser" method="post">
+            <form asp-controller="Admin" asp-action="AddHospital" method="post">
                 @Html.AntiForgeryToken()
 
-                <input type="hidden" asp-for="UserId" />
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                 <div class="row g-3">
                     <div class="col-md-6">
@@ -144,48 +115,34 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label">Blood Type</label>
-                        <select class="form-select" asp-for="BloodTypeId">
-                            <option value="">-- Select --</option>
-                            @foreach (var bt in bloodTypes)
-                            {
-                                <option value="@bt.BloodTypeId" selected="@(Model.BloodTypeId == (int)bt.BloodTypeId)">
-                                    @bt.TypeName
-                                </option>
-                            }
-                        </select>
-                        <span class="text-danger" asp-validation-for="BloodTypeId"></span>
+                        <label class="form-label">Password</label>
+                        <input class="form-control" asp-for="Password" type="password" />
+                        <span class="text-danger" asp-validation-for="Password"></span>
                     </div>
-
 
                     <div class="col-md-6">
-                        <label class="form-label">Date of Birth</label>
-                        <input class="form-control"
-                               asp-for="DateOfBirth"
-                               type="date" />
-                        <span class="text-danger" asp-validation-for="DateOfBirth"></span>
+                        <label class="form-label">Confirm Password</label>
+                        <input class="form-control" asp-for="ConfirmPassword" type="password" />
+                        <span class="text-danger" asp-validation-for="ConfirmPassword"></span>
                     </div>
 
-                    <div class="col-md-12">
-                        <label class="form-label">
-                            Health Status
-                            <span class="text-muted">(optional)</span>
-                        </label>
-                        <textarea class="form-control"
-                                  asp-for="HealthStatus"
-                                  rows="2"></textarea>
-                        <span class="text-danger" asp-validation-for="HealthStatus"></span>
-                    </div>
                 </div>
 
-                <div class="d-flex flex-wrap gap-2 mt-4">
+                <div class="d-flex gap-2 mt-4">
                     <button type="submit" class="btn btn-wine px-4">
-                        <i class="bi bi-check2-circle me-1"></i> Save Changes
+                        <i class="bi bi-check2-circle me-1"></i> Create
                     </button>
+
+                    <a class="btn btn-outline-wine px-4"
+                       asp-controller="Admin"
+                       asp-action="Hospitals">
+                        Cancel
+                    </a>
                 </div>
             </form>
         </div>
     </div>
+
 </div>
 
 @section Scripts {

@@ -1,5 +1,6 @@
 ﻿using Blood_Donations_Project.Models;
 using Blood_Donations_Project.ViewModels;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
@@ -19,6 +20,14 @@ namespace Blood_Donations_Project.Controllers
         {
             var role = HttpContext.Session.GetString("UserRole") ?? "";
             return role == "Admin";
+        }
+
+        private int CalculateAge(DateTime dob)
+        {
+            var today = DateTime.Today;
+            var age = today.Year - dob.Year;
+            if (dob.Date > today.AddYears(-age)) age--;
+            return age;
         }
 
         public async Task<IActionResult> Dashboard(string table = "BloodRequests", string status = "All")
@@ -72,8 +81,10 @@ namespace Blood_Donations_Project.Controllers
 
                 var donorQuery = _context.DonationRequests
                     .Include(r => r.User)
+                    .ThenInclude(u => u.Donors)
                     .Include(r => r.ApprovedByNavigation)
                     .AsQueryable();
+
 
                 if (!string.Equals(status, "All", StringComparison.OrdinalIgnoreCase))
                     donorQuery = donorQuery.Where(r => r.Status != null && r.Status.Trim() == status);
@@ -141,6 +152,8 @@ namespace Blood_Donations_Project.Controllers
 
         }
 
+        // User (Donor) Management
+
         [HttpGet]
         public async Task<IActionResult> Users()
         {
@@ -149,7 +162,7 @@ namespace Blood_Donations_Project.Controllers
             var users = await _context.Users
                 .Include(u => u.Role)
                 .Include(u => u.Donors).ThenInclude(d => d.BloodType)
-                .Where(u => u.Role != null && u.Role.RoleName != "Admin")
+                .Where(u => u.Role != null && u.Role.RoleName == "Donor")
                 .Select(u => new AdminUserRow
                 {
                     UserId = u.UserId,
@@ -174,15 +187,20 @@ namespace Blood_Donations_Project.Controllers
         [HttpGet]
         public async Task<IActionResult> EditUser(int id)
         {
-            if (!IsAdmin()) return RedirectToAction("Dashboard", "Home");
+            if (!IsAdmin())
+                return RedirectToAction("Dashboard", "Home");
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == id);
-            if (user == null) return NotFound();
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .Include(u => u.Donors)
+                .FirstOrDefaultAsync(u => u.UserId == id);
 
-            var roles = await _context.Roles
-                .Select(r => new { r.RoleId, r.RoleName })
-                .ToListAsync();
-            ViewBag.Roles = roles;
+            if (user == null || user.Role.RoleName != "Donor")
+                return NotFound();
+
+            var donor = user.Donors.FirstOrDefault();
+            if (donor == null)
+                return NotFound();
 
             var model = new EditUser
             {
@@ -192,40 +210,311 @@ namespace Blood_Donations_Project.Controllers
                 Email = user.Email,
                 MobileNo = user.MobileNo,
                 Address = user.Address,
-                RoleId = user.RoleId
+                DateOfBirth = user.DateOfBirth,
+                HealthStatus = donor.HealthStatus,
+                BloodTypeId = donor.BloodTypeId
             };
+
+            ViewBag.BloodTypes = await _context.BloodTypes
+               .Select(bt => new { bt.BloodTypeId, bt.TypeName })
+               .ToListAsync();
 
             return View(model);
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditUser(EditUser model)
         {
-            if (!IsAdmin()) return RedirectToAction("Dashboard", "Home");
+            if (!IsAdmin())
+                return RedirectToAction("Dashboard", "Home");
 
-            var roles = await _context.Roles
-                .Select(r => new { r.RoleId, r.RoleName })
-                .ToListAsync();
-            ViewBag.Roles = roles;
+            if (!ModelState.IsValid)
+            {
+                ViewBag.BloodTypes = await _context.BloodTypes.ToListAsync();
+                return View(model);
+            }
 
-            if (!ModelState.IsValid) return View(model);
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .Include(u => u.Donors)
+                .FirstOrDefaultAsync(u => u.UserId == model.UserId);
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == model.UserId);
-            if (user == null) return NotFound();
+            if (user == null || user.Role.RoleName != "Donor")
+                return NotFound();
+
+            var donor = user.Donors.FirstOrDefault();
+            if (donor == null)
+                return NotFound();
 
             user.FullName = model.FullName;
             user.UserName = model.UserName;
             user.Email = model.Email;
             user.MobileNo = model.MobileNo;
             user.Address = model.Address;
-            user.RoleId = model.RoleId;
+            user.DateOfBirth = model.DateOfBirth;
+
+            donor.HealthStatus = model.HealthStatus;
+            donor.BloodTypeId = model.BloodTypeId;
 
             await _context.SaveChangesAsync();
 
-            TempData["Success"] = "User updated successfully.";
+            TempData["Success"] = "Donor updated successfully.";
             return RedirectToAction(nameof(Users));
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            if (!IsAdmin())
+                return Json(new { success = false, message = "Not authorized" });
+
+            var myIdStr = HttpContext.Session.GetString("UserId");
+            if (int.TryParse(myIdStr, out var myId) && myId == id)
+            {
+                return Json(new { success = false, message = "You cannot delete your own account." });
+            }
+
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.UserId == id);
+
+            if (user == null)
+                return Json(new { success = false, message = "User not found." });
+
+            if (user.Role?.RoleName != "Donor")
+                return Json(new { success = false, message = "This action is only for Donor accounts." });
+
+            using var tx = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var tokens = await _context.PasswordReset.Where(x => x.UserId == id).ToListAsync();
+                if (tokens.Any()) _context.PasswordReset.RemoveRange(tokens);
+
+                var donationReqs = await _context.DonationRequests.Where(x => x.UserId == id).ToListAsync();
+                if (donationReqs.Any()) _context.DonationRequests.RemoveRange(donationReqs);
+
+                var donations = await _context.Donations.Where(x => x.UserId == id).ToListAsync();
+                if (donations.Any()) _context.Donations.RemoveRange(donations);
+
+                var donor = await _context.Donors.FirstOrDefaultAsync(d => d.UserId == id);
+                if (donor != null) _context.Donors.Remove(donor);
+
+                var userRoles = await _context.UserRoles.Where(ur => ur.UserId == id).ToListAsync();
+                if (userRoles.Any()) _context.UserRoles.RemoveRange(userRoles);
+
+                _context.Users.Remove(user);
+
+                await _context.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                return Json(new { success = true, message = "Donor deleted successfully." });
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                return Json(new { success = false, message = "Failed to delete donor." });
+            }
+        }
+
+        // Hospitals Management
+
+        public async Task<IActionResult> Hospitals()
+        {
+            if (!IsAdmin()) return RedirectToAction("Dashboard", "Home");
+
+            var hospitals = await _context.Users
+                .Include(u => u.Role)
+                .Where(u => u.Role != null && u.Role.RoleName == "Hospital")
+                .OrderBy(u => u.UserId)
+                .ToListAsync();
+
+            return View(hospitals);
+        }
+
+        [HttpGet]
+        public IActionResult AddHospital()
+        {
+            if (!IsAdmin()) return RedirectToAction("Dashboard", "Home");
+            return View(new HospitalCreate());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddHospital(HospitalCreate model)
+        {
+            if (!IsAdmin()) return RedirectToAction("Dashboard", "Home");
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            if (await _context.Users.AnyAsync(u => u.Email == model.Email))
+            {
+                ModelState.AddModelError(nameof(model.Email), "Email already exists.");
+                return View(model);
+            }
+
+            if (await _context.Users.AnyAsync(u => u.UserName == model.UserName))
+            {
+                ModelState.AddModelError(nameof(model.UserName), "UserName already exists.");
+                return View(model);
+            }
+
+            var hospitalRoleId = await _context.Roles
+                .Where(r => r.RoleName == "Hospital")
+                .Select(r => r.RoleId)
+                .FirstOrDefaultAsync();
+
+            if (hospitalRoleId == 0)
+            {
+                ModelState.AddModelError("", "Hospital role not found in Roles table.");
+                return View(model);
+            }
+
+            var user = new User
+            {
+                UserName = model.UserName,
+                FullName = model.FullName,
+                Email = model.Email,
+                MobileNo = model.MobileNo,
+                Address = model.Address,
+                RoleId = hospitalRoleId
+            };
+
+            var hasher = new PasswordHasher<User>();
+            user.Password = hasher.HashPassword(user, model.Password);
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Hospital account created successfully.";
+            return RedirectToAction(nameof(Hospitals));
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditHospital(int id)
+        {
+            if (!IsAdmin()) return RedirectToAction("Dashboard", "Home");
+
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.UserId == id);
+
+            if (user == null) return NotFound();
+            if (!string.Equals(user.Role?.RoleName, "Hospital", StringComparison.OrdinalIgnoreCase))
+                return NotFound();
+
+            var vm = new HospitalEdit
+            {
+                UserId = user.UserId,
+                UserName = user.UserName ?? "",
+                FullName = user.FullName ?? "",
+                Email = user.Email ?? "",
+                MobileNo = user.MobileNo,
+                Address = user.Address
+            };
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditHospital(HospitalEdit model)
+        {
+            if (!IsAdmin()) return RedirectToAction("Dashboard", "Home");
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.UserId == model.UserId);
+
+            if (user == null) return NotFound();
+            if (!string.Equals(user.Role?.RoleName, "Hospital", StringComparison.OrdinalIgnoreCase))
+                return NotFound();
+
+            if (await _context.Users.AnyAsync(u => u.Email == model.Email && u.UserId != model.UserId))
+            {
+                ModelState.AddModelError(nameof(model.Email), "Email already exists.");
+                return View(model);
+            }
+
+            if (await _context.Users.AnyAsync(u => u.UserName == model.UserName && u.UserId != model.UserId))
+            {
+                ModelState.AddModelError(nameof(model.UserName), "UserName already exists.");
+                return View(model);
+            }
+
+            user.UserName = model.UserName;
+            user.FullName = model.FullName;
+            user.Email = model.Email;
+            user.MobileNo = model.MobileNo;
+            user.Address = model.Address;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Hospital updated successfully.";
+            return RedirectToAction(nameof(Hospitals));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteHospital(int id)
+        {
+            if (!IsAdmin()) return RedirectToAction("Dashboard", "Home");
+
+            var myIdStr = HttpContext.Session.GetString("UserId");
+            if (int.TryParse(myIdStr, out var myId) && myId == id)
+            {
+                TempData["Error"] = "You cannot delete your own account.";
+                return RedirectToAction(nameof(Hospitals));
+            }
+
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.UserId == id);
+
+            if (user == null) return NotFound();
+
+            if (!string.Equals(user.Role?.RoleName, "Hospital", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Error"] = "This action is only for Hospital accounts.";
+                return RedirectToAction(nameof(Hospitals));
+            }
+
+            using var tx = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var tokens = await _context.PasswordReset.Where(x => x.UserId == id).ToListAsync();
+                if (tokens.Any()) _context.PasswordReset.RemoveRange(tokens);
+
+                var bloodReqs = await _context.BloodRequests.Where(br => br.UserId == id).ToListAsync();
+                if (bloodReqs.Any()) _context.BloodRequests.RemoveRange(bloodReqs);
+
+                var donations = await _context.Donations.Where(d => d.UserId == id).ToListAsync();
+                if (donations.Any()) _context.Donations.RemoveRange(donations);
+
+                var userRoles = await _context.UserRoles.Where(ur => ur.UserId == id).ToListAsync();
+                if (userRoles.Any()) _context.UserRoles.RemoveRange(userRoles);
+
+                _context.Users.Remove(user);
+
+                await _context.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                TempData["Success"] = "Hospital deleted successfully.";
+                return RedirectToAction(nameof(Hospitals));
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                TempData["Error"] = "Failed to delete hospital. Please try again.";
+                return RedirectToAction(nameof(Hospitals));
+            }
         }
 
         public async Task<IActionResult> ManageDonations()
@@ -286,6 +575,7 @@ namespace Blood_Donations_Project.Controllers
             return Json(new { success = true, message = "Donation rejected" });
         }
 
+        // Manage Blood Requests
         public async Task<IActionResult> ManageBloodRequests(string status = "Pending")
         {
             status = (status ?? "Pending").Trim();
@@ -331,25 +621,18 @@ namespace Blood_Donations_Project.Controllers
             if (req == null)
                 return Json(new { success = false, message = "Request not found" });
 
-            if (req.UserId == null)
-                return Json(new { success = false, message = "Invalid request data" });
+            if (!string.Equals(req.Status, "Pending", StringComparison.OrdinalIgnoreCase))
+                return Json(new { success = false, message = "Already processed" });
 
-            var donation = new Donation
-            {
-                UserId = req.UserId.Value,
-                ApprovedBy = adminId,
-                DonationDate = DateOnly.FromDateTime(DateTime.Now),
-                Status = "Approved" 
-            };
-
-            _context.Donations.Add(donation);
-
-            req.Status = "Approved";
+            if (req.BloodTypeId == null)
+                return Json(new { success = false, message = "Invalid blood type" });
 
             var units = req.Quantity ?? 0;
+            if (units <= 0)
+                return Json(new { success = false, message = "Invalid quantity" });
 
             var inventory = await _context.BloodInventories
-                .FirstOrDefaultAsync(i => i.BloodTypeId == req.BloodTypeId);
+                .FirstOrDefaultAsync(i => i.BloodTypeId == req.BloodTypeId.Value);
 
             if (inventory == null)
                 return Json(new { success = false, message = "Inventory not found" });
@@ -358,7 +641,7 @@ namespace Blood_Donations_Project.Controllers
                 return Json(new { success = false, message = "Not enough blood units available" });
 
             inventory.UnitsAvailable -= units;
-
+            req.Status = "Approved";
 
             await _context.SaveChangesAsync();
 
@@ -376,6 +659,9 @@ namespace Blood_Donations_Project.Controllers
             if (req == null)
                 return Json(new { success = false, message = "Request not found" });
 
+            if (!string.Equals(req.Status, "Pending", StringComparison.OrdinalIgnoreCase))
+                return Json(new { success = false, message = "Already processed" });
+
             req.Status = "Rejected";
 
             await _context.SaveChangesAsync();
@@ -384,17 +670,76 @@ namespace Blood_Donations_Project.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ApproveDonorRequest(int id)
+        public async Task<IActionResult> VerifyDonorMedical(int userId)
         {
             var adminIdStr = HttpContext.Session.GetString("UserId");
             if (!int.TryParse(adminIdStr, out var adminId))
                 return Json(new { success = false, message = "Not authorized" });
 
-            var req = await _context.DonationRequests.FirstOrDefaultAsync(r => r.Id == id);
-            if (req == null) return Json(new { success = false, message = "Request not found" });
+            var donor = await _context.Donors
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (donor == null)
+                return Json(new { success = false, message = "Donor profile not found" });
+
+            donor.IsMedicalVerified = true;
+            donor.MedicalVerifiedBy = adminId;
+            donor.MedicalVerifiedDate = DateOnly.FromDateTime(DateTime.Now);
+
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Donor medical data verified successfully." });
+        }
+
+        // Manage Donor Requests
+        [HttpPost]
+        public async Task<IActionResult> ApproveDonorRequest(int id)
+        {
+            if (!IsAdmin())
+                return Json(new { success = false, message = "Not authorized" });
+
+            var adminIdStr = HttpContext.Session.GetString("UserId");
+            int.TryParse(adminIdStr, out var adminId);
+
+            var req = await _context.DonationRequests
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (req == null)
+                return Json(new { success = false, message = "Request not found" });
 
             if (req.Status != "Pending")
                 return Json(new { success = false, message = "Already processed" });
+
+            var donor = await _context.Donors
+                .FirstOrDefaultAsync(d => d.UserId == req.UserId);
+
+            if (donor == null)
+                return Json(new { success = false, message = "Donor profile not found" });
+
+            if (req.User.DateOfBirth == default)
+                return Json(new { success = false, message = "Date of birth missing." });
+
+            int age = CalculateAge(req.User.DateOfBirth);
+            if (age < 18)
+                return Json(new { success = false, message = "Donor must be 18+." });
+
+            if (!donor.IsMedicalVerified)
+                return Json(new { success = false, message = "Medical data not verified." });
+
+            if (donor.LastDonationDate.HasValue)
+            {
+                var nextAllowed = donor.LastDonationDate.Value
+                    .ToDateTime(TimeOnly.MinValue)
+                    .AddMonths(3);
+
+                if (DateTime.Now < nextAllowed)
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"Can donate again after {nextAllowed:dd/MM/yyyy}"
+                    });
+            }
 
             req.Status = "Approved";
             req.ApprovedBy = adminId;
@@ -408,31 +753,36 @@ namespace Blood_Donations_Project.Controllers
                 Status = "Approved"
             });
 
-            var donor = await _context.Donors.FirstOrDefaultAsync(d => d.UserId == req.UserId);
-            if (donor?.BloodTypeId != null)
+            if (donor.BloodTypeId.HasValue)
             {
                 var inventory = await _context.BloodInventories
                     .FirstOrDefaultAsync(i => i.BloodTypeId == donor.BloodTypeId);
 
                 if (inventory != null)
-                {
                     inventory.UnitsAvailable += 1;
-                }
             }
 
+            donor.LastDonationDate = DateOnly.FromDateTime(DateTime.Now);
+
             await _context.SaveChangesAsync();
-            return Json(new { success = true, message = "Donor request approved" });
+
+            return Json(new { success = true, message = "Donor request approved." });
         }
 
         [HttpPost]
         public async Task<IActionResult> RejectDonorRequest(int id)
         {
-            var adminIdStr = HttpContext.Session.GetString("UserId");
-            if (!int.TryParse(adminIdStr, out var adminId))
+            if (!IsAdmin())
                 return Json(new { success = false, message = "Not authorized" });
 
-            var req = await _context.DonationRequests.FirstOrDefaultAsync(r => r.Id == id);
-            if (req == null) return Json(new { success = false, message = "Request not found" });
+            var adminIdStr = HttpContext.Session.GetString("UserId");
+            int.TryParse(adminIdStr, out var adminId);
+
+            var req = await _context.DonationRequests
+                .FirstOrDefaultAsync(r => r.Id == id);
+
+            if (req == null)
+                return Json(new { success = false, message = "Request not found" });
 
             if (req.Status != "Pending")
                 return Json(new { success = false, message = "Already processed" });
@@ -442,10 +792,9 @@ namespace Blood_Donations_Project.Controllers
             req.ApprovedDate = DateOnly.FromDateTime(DateTime.Now);
 
             await _context.SaveChangesAsync();
-            return Json(new { success = true, message = "Donor request rejected" });
+
+            return Json(new { success = true, message = "Donor request rejected." });
         }
-
-
 
         public async Task<IActionResult> Statistics()
         {
@@ -472,6 +821,7 @@ namespace Blood_Donations_Project.Controllers
             return View();
         }
 
+        // Blood Availability Management
         [HttpGet]
         public async Task<IActionResult> BloodAvailability()
         {
@@ -483,6 +833,69 @@ namespace Blood_Donations_Project.Controllers
                 .ToListAsync();
 
             return View(stock);
+        }
+
+        public class InventoryUnitsDto
+        {
+            public int Id { get; set; }
+            public int Units { get; set; }
+        }
+
+        public class InventoryAmountDto
+        {
+            public int Id { get; set; }
+            public int Amount { get; set; }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateInventoryUnits([FromBody] InventoryUnitsDto dto)
+        {
+            if (!IsAdmin()) return Json(new { success = false, message = "Not authorized" });
+
+            if (dto.Units < 0) return Json(new { success = false, message = "Units must be >= 0" });
+
+            var inv = await _context.BloodInventories.FirstOrDefaultAsync(x => x.Id == dto.Id);
+            if (inv == null) return Json(new { success = false, message = "Inventory row not found" });
+
+            inv.UnitsAvailable = dto.Units;
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Units updated successfully" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddInventoryUnits([FromBody] InventoryAmountDto dto)
+        {
+            if (!IsAdmin()) return Json(new { success = false, message = "Not authorized" });
+
+            if (dto.Amount <= 0) return Json(new { success = false, message = "Amount must be > 0" });
+
+            var inv = await _context.BloodInventories.FirstOrDefaultAsync(x => x.Id == dto.Id);
+            if (inv == null) return Json(new { success = false, message = "Inventory row not found" });
+
+            inv.UnitsAvailable += dto.Amount;
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = $"+{dto.Amount} units added" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveInventoryUnits([FromBody] InventoryAmountDto dto)
+        {
+            if (!IsAdmin()) return Json(new { success = false, message = "Not authorized" });
+
+            if (dto.Amount <= 0) return Json(new { success = false, message = "Amount must be > 0" });
+
+            var inv = await _context.BloodInventories.FirstOrDefaultAsync(x => x.Id == dto.Id);
+            if (inv == null) return Json(new { success = false, message = "Inventory row not found" });
+
+            if (inv.UnitsAvailable < dto.Amount)
+                return Json(new { success = false, message = "Not enough units to remove" });
+
+            inv.UnitsAvailable -= dto.Amount;
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = $"-{dto.Amount} units removed" });
         }
     }
 }

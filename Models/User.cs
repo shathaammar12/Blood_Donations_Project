@@ -20,6 +20,7 @@ public partial class User
     public string? Password { get; set; }
 
     public int RoleId { get; set; }
+    public DateTime DateOfBirth { get; set; }
 
     public virtual ICollection<Donation> DonationApprovedByNavigations { get; set; } = new List<Donation>();
 

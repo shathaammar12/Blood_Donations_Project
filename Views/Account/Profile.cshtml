@@ -1,30 +1,147 @@
 ﻿@model Blood_Donations_Project.ViewModels.Profile
+@using Microsoft.AspNetCore.Http
+
 @{
     ViewData["Title"] = "My Profile";
+
     var role = Context.Session.GetString("UserRole") ?? "";
     var bloodTypes = ViewBag.BloodTypes as dynamic ?? new List<dynamic>();
+
+    bool canEdit = role.Equals("Donor", StringComparison.OrdinalIgnoreCase);
+    string? roAttr = canEdit ? null : "readonly";
+    string? disAttr = canEdit ? null : "disabled";
 }
 
-<div class="container mt-4">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-        <h2 class="mb-0">My Profile</h2>
-        <a class="btn btn-danger" asp-controller="Admin" asp-action="Dashboard">Back</a>
-    </div>
+<style>
+    :root {
+        --wine: #5A0F1B;
+        --wine-2: #7b1626;
+    }
+
+    body {
+        background: radial-gradient( circle at top left, rgba(90,15,27,0.12), transparent 60% ), linear-gradient( 135deg, rgba(90,15,27,0.08), rgba(90,15,27,0.02) );
+        background-attachment: fixed;
+    }
+
+
+
+    .profile-card {
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid rgba(90,15,27,.15);
+        box-shadow: 0 12px 40px rgba(0,0,0,.08);
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, var(--wine), var(--wine-2));
+        color: white;
+        padding: 16px 20px;
+    }
+
+        .profile-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+    .form-control,
+    .form-select {
+        border-radius: 12px;
+        border-color: rgba(90,15,27,.25);
+    }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--wine);
+            box-shadow: 0 0 0 .2rem rgba(90,15,27,.18);
+        }
+
+    .btn-wine {
+        background: var(--wine);
+        border-color: var(--wine);
+        color: white;
+    }
+
+        .btn-wine:hover {
+            background: var(--wine-2);
+            border-color: var(--wine-2);
+        }
+
+    .btn-outline-wine {
+        border: 1px solid var(--wine);
+        color: var(--wine);
+    }
+
+        .btn-outline-wine:hover {
+            background: var(--wine);
+            color: white;
+        }
+
+    .alert-wine {
+        background-color: rgba(90, 15, 27, 0.08);
+        border: 1px solid rgba(90, 15, 27, 0.25);
+        color: #5A0F1B;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+
+    .alert-wine-success {
+        background: linear-gradient( 135deg, rgba(90,15,27,.12), rgba(90,15,27,.05) );
+        border: 1px solid rgba(90,15,27,.35);
+        color: #5A0F1B;
+        border-radius: 14px;
+        font-weight: 500;
+    }
+
+    .alert-wine-info {
+        background: linear-gradient( 135deg, rgba(90,15,27,.08), rgba(90,15,27,.03) );
+        border: 1px solid rgba(90,15,27,.25);
+        color: #5A0F1B;
+        border-radius: 14px;
+        font-weight: 500;
+    }
+
+        .alert-wine-success .btn-close,
+        .alert-wine-info .btn-close {
+            filter: invert(20%);
+        }
+
+
+</style>
+
+<div class="container mt-5 mb-5">
 
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success">@TempData["Success"]</div>
+        <div class="alert alert-wine-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            @TempData["Success"]
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"></button>
+        </div>
     }
 
-    <div class="card shadow">
-        <div class="card-header bg-danger text-white">
-            <h5 class="mb-0">Update your info</h5>
+    @if (!canEdit)
+    {
+        <div class="alert alert-wine-info alert-dismissible fade show" role="alert">
+            <i class="bi bi-info-circle me-2"></i>
+            Your profile data is managed by the Admin. You can only submit new requests.
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card profile-card">
+        <div class="profile-header">
+            <h5>Profile Information</h5>
         </div>
 
-        <div class="card-body">
+        <div class="card-body p-4">
             <form asp-controller="Account" asp-action="Profile" method="post">
                 @Html.AntiForgeryToken()
-
                 <input type="hidden" asp-for="UserId" />
 
                 <div class="row g-3">
@@ -35,24 +152,24 @@
 
                     <div class="col-md-6">
                         <label class="form-label">Full Name</label>
-                        <input class="form-control" asp-for="FullName" />
+                        <input class="form-control" asp-for="FullName" readonly="@roAttr" />
                         <span class="text-danger" asp-validation-for="FullName"></span>
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label">Email</label>
-                        <input class="form-control" asp-for="Email" />
+                        <input class="form-control" asp-for="Email" readonly="@roAttr" />
                         <span class="text-danger" asp-validation-for="Email"></span>
                     </div>
 
                     <div class="col-md-6">
                         <label class="form-label">Mobile No</label>
-                        <input class="form-control" asp-for="MobileNo" />
+                        <input class="form-control" asp-for="MobileNo" readonly="@roAttr" />
                     </div>
 
                     <div class="col-md-12">
                         <label class="form-label">Address</label>
-                        <input class="form-control" asp-for="Address" />
+                        <input class="form-control" asp-for="Address" readonly="@roAttr" />
                     </div>
 
                     <div class="col-md-6">
@@ -60,25 +177,72 @@
                         <input class="form-control" value="@role" readonly />
                     </div>
 
-                    @if (role == "Donor")
+                    @* Donor-only fields *@
+                    @if (role.Equals("Donor", StringComparison.OrdinalIgnoreCase))
                     {
                         <div class="col-md-6">
                             <label class="form-label">Blood Type</label>
-                            <select class="form-select" asp-for="BloodTypeId">
+                            <select class="form-select"
+                                    asp-for="BloodTypeId"
+                                    disabled="@disAttr">
                                 <option value="">-- Select --</option>
                                 @foreach (var bt in bloodTypes)
                                 {
-                                    <option value="@bt.BloodTypeId" selected="@(Model.BloodTypeId == (int)bt.BloodTypeId)">
+                                    var btId = (int)bt.BloodTypeId;
+                                    <option value="@btId" selected="@(Model.BloodTypeId == btId)">
                                         @bt.TypeName
                                     </option>
                                 }
                             </select>
                             <span class="text-danger" asp-validation-for="BloodTypeId"></span>
                         </div>
-                    }
+
+                        <div class="col-md-6">
+                            <label class="form-label">Date of Birth</label>
+                            <input class="form-control" asp-for="DateOfBirth" type="date" readonly />
+                            <div class="form-text">Date of birth cannot be changed.</div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                Health Status <span class="text-muted">(optional)</span>
+                            </label>
+                            <textarea class="form-control"
+                                      asp-for="HealthStatus"
+                                      rows="2"
+                                      readonly="@roAttr"></textarea>
+                        </div>
+                    }                  
+
                 </div>
 
-                <button type="submit" class="btn btn-danger mt-3">Save</button>
+                @if (!canEdit)
+                {
+                    <div class="d-flex gap-2 mt-4">
+                        <a class="btn btn-wine px-4"
+                           asp-controller="Admin"
+                           asp-action="Dashboard">
+                            Go Back
+                        </a>
+                    </div>
+                }
+
+                @if (canEdit)
+                {
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-wine px-4">
+                            <i class="bi bi-check2-circle me-1"></i>Save Changes
+                        </button>
+
+                        <a class="btn btn-outline-wine px-4"
+                           asp-controller="Admin"
+                           asp-action="Dashboard">
+                            Cancel
+                        </a>
+                    </div>
+                }
+
+
             </form>
         </div>
     </div>

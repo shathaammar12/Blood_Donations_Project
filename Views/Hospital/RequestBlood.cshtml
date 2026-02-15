@@ -1,54 +1,78 @@
 ﻿@model Blood_Donations_Project.ViewModels.BloodRequestViewModel
-
 @{
     ViewData["Title"] = "Request Blood";
 }
 
 <div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-md-7">
-            <div class="card shadow border-danger border-2">
-                <div class="card-header bg-danger text-white">
-                    <h5 class="mb-0">Request Blood</h5>
+        <div class="col-lg-7 col-md-9">
+
+            <div class="card card-wine">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <h5 class="mb-0">
+                        <i class="bi bi-hospital me-2"></i> Request Blood
+                    </h5>
+
+                    <span class="badge badge-wine text-white px-3 py-2">
+                        <i class="bi bi-shield-check me-1"></i> Admin Review
+                    </span>
                 </div>
 
-                <div class="card-body">
-                    <p class="text-muted mb-4">
+                <div class="card-body p-4">
+
+                    <div class="alert alert-wine alert-dismissible fade show mb-4" role="alert">
+                        <i class="bi bi-info-circle me-2"></i>
                         Your request will be reviewed by the admin.
-                    </p>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+
 
                     <form asp-controller="Hospital" asp-action="RequestBlood" method="post">
                         @Html.AntiForgeryToken()
 
                         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                        <div class="mb-3">
-                            <label asp-for="BloodTypeId" class="form-label"></label>
-                            <select asp-for="BloodTypeId" asp-items="ViewBag.BloodTypes" class="form-select">
-                                <option value="">Select blood type</option>
-                            </select>
-                            <span asp-validation-for="BloodTypeId" class="text-danger"></span>
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <label asp-for="BloodTypeId" class="form-label">Blood Type</label>
+                                <select asp-for="BloodTypeId"
+                                        asp-items="ViewBag.BloodTypes"
+                                        class="form-select">
+                                    <option value="">Select blood type</option>
+                                </select>
+                                <span asp-validation-for="BloodTypeId" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Quantity" class="form-label">Quantity</label>
+                                <input asp-for="Quantity"
+                                       class="form-control"
+                                       type="number"
+                                       min="1"
+                                       placeholder="Enter quantity" />
+                                <span asp-validation-for="Quantity" class="text-danger"></span>
+                            </div>
+
                         </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Quantity" class="form-label"></label>
-                            <input asp-for="Quantity" class="form-control" type="number" min="1" placeholder="Enter quantity" />
-                            <span asp-validation-for="Quantity" class="text-danger"></span>
-                        </div>
-
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-danger">
-                                Submit Request
+                        <div class="d-flex flex-wrap gap-2 mt-4">
+                            <button type="submit" class="btn btn-wine px-4">
+                                <i class="bi bi-send me-1"></i> Submit Request
                             </button>
 
-                            <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-outline-secondary">
+                            <a asp-controller="Admin"
+                               asp-action="Dashboard"
+                               class="btn btn-outline-wine px-4">
                                 Cancel
                             </a>
                         </div>
+
                     </form>
 
                 </div>
             </div>
+
         </div>
     </div>
 </div>

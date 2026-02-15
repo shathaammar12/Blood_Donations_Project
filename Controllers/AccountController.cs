@@ -1,5 +1,4 @@
 ﻿using Blood_Donations_Project.Models;
-using Blood_Donations_Project.Services;
 using Blood_Donations_Project.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -17,17 +16,16 @@ namespace Blood_Donations_Project.Controllers
         private readonly BloodDonationContext _context;
         private readonly IConfiguration _config;
 
-
         public AccountController(BloodDonationContext context, IConfiguration config)
         {
             _context = context;
             _config = config;
         }
 
-        public IActionResult Login()
-        {
-            return View();
-        }
+        // LOGIN
+
+        [HttpGet]
+        public IActionResult Login() => View();
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -51,16 +49,16 @@ namespace Blood_Donations_Project.Controllers
 
             if (result == PasswordVerificationResult.Failed)
             {
-                ModelState.AddModelError("", "Invalid email or password");
+                ModelState.AddModelError("", "Invalid email or password.");
                 return View(model);
             }
 
             var claims = new List<Claim>
-    {
-        new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
-        new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
-        new Claim(ClaimTypes.Role, user.Role?.RoleName ?? "")
-    };
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
+                new Claim(ClaimTypes.Role, user.Role?.RoleName ?? "")
+            };
 
             var keyString = _config["Jwt:Key"];
             if (string.IsNullOrEmpty(keyString))
@@ -72,47 +70,32 @@ namespace Blood_Donations_Project.Controllers
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
                 claims: claims,
-                expires: model.RememberMe
-                    ? DateTime.UtcNow.AddDays(7)
-                    : DateTime.UtcNow.AddHours(2),
+                expires: model.RememberMe ? DateTime.UtcNow.AddDays(7) : DateTime.UtcNow.AddHours(2),
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
             );
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            var cookieOptions = new CookieOptions
+            Response.Cookies.Append("jwt", tokenString, new CookieOptions
             {
                 HttpOnly = true,
-                SameSite = SameSiteMode.Lax, 
-                Secure = Request.IsHttps,                
-                Expires = model.RememberMe
-                    ? DateTimeOffset.Now.AddDays(7)
-                    : DateTimeOffset.Now.AddHours(2)
-            };
+                SameSite = SameSiteMode.Lax,
+                Secure = Request.IsHttps,
+                Expires = model.RememberMe ? DateTimeOffset.Now.AddDays(7) : DateTimeOffset.Now.AddHours(2)
+            });
 
-            Response.Cookies.Append("jwt", tokenString, cookieOptions);
-
-            HttpContext.Session.SetString("jwt", tokenString);
             HttpContext.Session.SetString("UserRole", user.Role?.RoleName ?? "");
             HttpContext.Session.SetString("UserId", user.UserId.ToString());
 
             return RedirectToAction("Dashboard", "Admin");
- 
         }
 
+        // REGISTER (DONOR ONLY)
+
+        [HttpGet]
         public async Task<IActionResult> Register()
         {
-            var roles = await _context.Roles
-                .Where(r => r.RoleName != "Admin")
-                .Select(r => new { r.RoleId, r.RoleName })
-                .ToListAsync();
-
-            ViewBag.Roles = new SelectList(roles, "RoleId", "RoleName");
-
-            var bloodTypes = await _context.BloodTypes
-            .Select(bt => new {bt.BloodTypeId, bt.TypeName})
-                .ToListAsync();
-            ViewBag.BloodTypes = new SelectList(bloodTypes, "BloodTypeId", "TypeName");
+            await LoadRegisterDropdowns();
             return View();
         }
 
@@ -120,98 +103,105 @@ namespace Blood_Donations_Project.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            var selectedRole = await _context.Roles.FindAsync(model.RoleId);
-            if (selectedRole?.RoleName != "Donor")
+            if (model.DateOfBirth == null)
+                ModelState.AddModelError(nameof(model.DateOfBirth), "Date of birth is required.");
+            else
             {
-                ModelState.Remove("BloodTypeId");
+                var age = CalculateAge(model.DateOfBirth.Value);
+                if (age < 18)
+                    ModelState.AddModelError(nameof(model.DateOfBirth), "You must be 18 or older to register as a donor.");
             }
 
-            if(!ModelState.IsValid)
+            if (!model.BloodTypeId.HasValue)
+                ModelState.AddModelError(nameof(model.BloodTypeId), "Blood type is required.");
+
+            if (!ModelState.IsValid)
             {
                 await LoadRegisterDropdowns();
                 return View(model);
             }
 
-            try
+            if (await _context.Users.AnyAsync(u => u.Email == model.Email))
             {
-                if(await _context.Users.AnyAsync(u => u.Email == model.Email))
-                {
-                    ModelState.AddModelError("Email", "Email already exists!");
-                    await LoadRegisterDropdowns();
-                    return View(model);
-                }
-
-                if (await _context.Users.AnyAsync(u => u.UserName == model.UserName))
-                {
-                    ModelState.AddModelError("UserName", "Username already exists");
-                    await LoadRegisterDropdowns();
-                    return View(model);
-                }
-
-                var hasher = new PasswordHasher<User>();
-                var user = new User
-                {
-                    UserName = model.UserName,
-                    Email = model.Email,
-                    FullName = model.FullName,
-                    MobileNo = model.MobileNo,
-                    Address = model.Address,
-                    RoleId = model.RoleId
-                };
-
-                user.Password = hasher.HashPassword(user, model.Password);
-
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
-
-                if(selectedRole?.RoleName == "Donor")
-                {
-                    if(!model.BloodTypeId.HasValue)
-                    {
-                        ModelState.AddModelError("BloodTypeId", "Blood type is required!");
-                        await LoadRegisterDropdowns();
-                        return View(model);
-                    }
-
-                    var donor = new Donor
-                    {
-                        UserId = user.UserId,
-                        BloodTypeId = model.BloodTypeId.Value,
-                        IsAvailable = true,
-                        LastDonationDate = null
-                    };
-
-                    _context.Donors.Add(donor);
-                    await _context.SaveChangesAsync();
-                }
-
-                TempData["SuccessMessage"] = "Registration successful! Please login.";
-                return RedirectToAction("Login");
-            }
-
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", "An error occurred during registration. Please try again.");
+                ModelState.AddModelError(nameof(model.Email), "Email already exists.");
                 await LoadRegisterDropdowns();
                 return View(model);
             }
+
+            if (await _context.Users.AnyAsync(u => u.UserName == model.UserName))
+            {
+                ModelState.AddModelError(nameof(model.UserName), "Username already exists.");
+                await LoadRegisterDropdowns();
+                return View(model);
+            }
+
+            var donorRoleId = await _context.Roles
+                .Where(r => r.RoleName == "Donor")
+                .Select(r => r.RoleId)
+                .FirstOrDefaultAsync();
+
+            if (donorRoleId == 0)
+            {
+                ModelState.AddModelError("", "Donor role not configured.");
+                await LoadRegisterDropdowns();
+                return View(model);
+            }
+
+            var hasher = new PasswordHasher<User>();
+
+            var user = new User
+            {
+                UserName = model.UserName,
+                Email = model.Email,
+                FullName = model.FullName,
+                MobileNo = model.MobileNo,
+                Address = model.Address,
+                RoleId = donorRoleId,
+                DateOfBirth = model.DateOfBirth!.Value
+            };
+
+            user.Password = hasher.HashPassword(user, model.Password);
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            var donor = new Donor
+            {
+                UserId = user.UserId,
+                BloodTypeId = model.BloodTypeId!.Value,
+                HealthStatus = model.HealthStatus,
+                IsAvailable = true,
+                LastDonationDate = null,
+                IsMedicalVerified = false
+            };
+
+            _context.Donors.Add(donor);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Registration successful! Please login.";
+            return RedirectToAction("Login");
         }
 
         private async Task LoadRegisterDropdowns()
         {
-            var roles = await _context.Roles
-                .Where(r => r.RoleName != "Admin")
-                .Select(r => new { r.RoleId, r.RoleName })
-                .ToListAsync();
-
-            ViewBag.Roles = new SelectList(roles, "RoleId", "RoleName");
-
             var bloodTypes = await _context.BloodTypes
                 .Select(bt => new { bt.BloodTypeId, bt.TypeName })
                 .ToListAsync();
 
             ViewBag.BloodTypes = new SelectList(bloodTypes, "BloodTypeId", "TypeName");
         }
+
+        private int CalculateAge(DateTime dob)
+        {
+            var today = DateTime.Today;
+            var age = today.Year - dob.Year;
+            if (dob.Date > today.AddYears(-age)) age--;
+            return age;
+        }
+
+        // LOGOUT
+
+        [HttpGet]
         public IActionResult Logout()
         {
             Response.Cookies.Delete("jwt");
@@ -219,20 +209,119 @@ namespace Blood_Donations_Project.Controllers
             return RedirectToAction("Login");
         }
 
-        public IActionResult Dashboard()
-        {
-            var role = HttpContext.Session.GetString("UserRole");
-            if (string.IsNullOrWhiteSpace(role))
-                return RedirectToAction("Login", "Account");
-
-            return View();
-        }
+        // PROFILE 
 
         [HttpGet]
-        public IActionResult ForgotPassword()
+        public async Task<IActionResult> Profile()
         {
-            return View();
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (!int.TryParse(userIdStr, out var userId))
+                return RedirectToAction("Login");
+
+            var roleName = HttpContext.Session.GetString("UserRole") ?? "";
+
+            var user = await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+                return RedirectToAction("Login");
+
+            var vm = new Profile
+            {
+                UserId = user.UserId,
+                FullName = user.FullName,
+                UserName = user.UserName,
+                Email = user.Email,
+                MobileNo = user.MobileNo,
+                Address = user.Address,
+                RoleName = user.Role?.RoleName
+            };
+
+            if (string.Equals(roleName, "Donor", StringComparison.OrdinalIgnoreCase))
+            {
+                vm.DateOfBirth = user.DateOfBirth;
+
+                var donor = await _context.Donors
+                    .Include(d => d.BloodType)
+                    .FirstOrDefaultAsync(d => d.UserId == userId);
+
+                vm.BloodTypeId = donor?.BloodTypeId;
+                vm.BloodTypeName = donor?.BloodType?.TypeName;
+                vm.HealthStatus = donor?.HealthStatus;
+
+                ViewBag.BloodTypes = await _context.BloodTypes
+                    .Select(bt => new { bt.BloodTypeId, bt.TypeName })
+                    .ToListAsync();
+            }
+
+            return View(vm);
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Profile(Profile model)
+        {
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (!int.TryParse(userIdStr, out var userId))
+                return RedirectToAction("Login");
+
+            if (model.UserId != userId)
+                return Forbid();
+
+            var roleName = HttpContext.Session.GetString("UserRole") ?? "";
+
+            if (string.Equals(roleName, "Hospital", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(roleName, "BloodBank", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Success"] = "Your profile data is managed by the Admin.";
+                return RedirectToAction("Profile");
+            }
+
+            if (string.Equals(roleName, "Donor", StringComparison.OrdinalIgnoreCase) && !model.BloodTypeId.HasValue)
+                ModelState.AddModelError(nameof(model.BloodTypeId), "Blood type is required.");
+
+            if (!ModelState.IsValid)
+            {
+                if (string.Equals(roleName, "Donor", StringComparison.OrdinalIgnoreCase))
+                {
+                    ViewBag.BloodTypes = await _context.BloodTypes
+                        .Select(bt => new { bt.BloodTypeId, bt.TypeName })
+                        .ToListAsync();
+                }
+                model.RoleName = roleName;
+                return View(model);
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null)
+                return RedirectToAction("Login");
+
+            user.FullName = model.FullName;
+            user.Email = model.Email;
+            user.MobileNo = model.MobileNo;
+            user.Address = model.Address;
+
+            if (string.Equals(roleName, "Donor", StringComparison.OrdinalIgnoreCase))
+            {
+                var donor = await _context.Donors.FirstOrDefaultAsync(d => d.UserId == userId);
+                if (donor != null)
+                {
+                    donor.BloodTypeId = model.BloodTypeId!.Value;
+                    donor.HealthStatus = model.HealthStatus;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Profile updated successfully.";
+            return RedirectToAction("Profile");
+        }
+
+        // FORGOT/RESET PASSWORD 
+
+        [HttpGet]
+        public IActionResult ForgotPassword() => View();
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -339,100 +428,5 @@ namespace Blood_Donations_Project.Controllers
             TempData["SuccessMessage"] = "Password reset successfully. Please login.";
             return RedirectToAction("Login");
         }
-
-        [HttpGet]
-        public async Task<IActionResult> Profile()
-        {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (!int.TryParse(userIdStr, out var userId))
-                return RedirectToAction("Login");
-
-            var user = await _context.Users
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.UserId == userId);
-
-            if (user == null) return RedirectToAction("Login");
-
-            var vm = new Profile
-            {
-                UserId = user.UserId,
-                FullName = user.FullName,
-                UserName = user.UserName,
-                Email = user.Email,
-                MobileNo = user.MobileNo,
-                Address = user.Address,
-                RoleName = user.Role?.RoleName
-            };
-
-            if (string.Equals(vm.RoleName, "Donor", StringComparison.OrdinalIgnoreCase))
-            {
-                var donor = await _context.Donors
-                    .Include(d => d.BloodType)
-                    .FirstOrDefaultAsync(d => d.UserId == userId);
-
-                vm.BloodTypeId = donor?.BloodTypeId;
-                vm.BloodTypeName = donor?.BloodType?.TypeName;
-
-                ViewBag.BloodTypes = await _context.BloodTypes
-                    .Select(bt => new { bt.BloodTypeId, bt.TypeName })
-                    .ToListAsync();
-            }
-
-            return View(vm);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Profile(Profile model)
-        {
-            var userIdStr = HttpContext.Session.GetString("UserId");
-            if (!int.TryParse(userIdStr, out var userId))
-                return RedirectToAction("Login");
-
-            if (model.UserId != userId) return Forbid();
-
-            var roleName = HttpContext.Session.GetString("UserRole") ?? "";
-
-            if (string.Equals(roleName, "Donor", StringComparison.OrdinalIgnoreCase))
-            {
-                if (!model.BloodTypeId.HasValue)
-                    ModelState.AddModelError(nameof(model.BloodTypeId), "Blood type is required.");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                if (string.Equals(roleName, "Donor", StringComparison.OrdinalIgnoreCase))
-                {
-                    ViewBag.BloodTypes = await _context.BloodTypes
-                        .Select(bt => new { bt.BloodTypeId, bt.TypeName })
-                        .ToListAsync();
-                }
-                model.RoleName = roleName;
-                return View(model);
-            }
-
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == userId);
-            if (user == null) return RedirectToAction("Login");
-
-            user.FullName = model.FullName;
-            user.Email = model.Email;
-            user.MobileNo = model.MobileNo;
-            user.Address = model.Address;
-
-            if (string.Equals(roleName, "Donor", StringComparison.OrdinalIgnoreCase))
-            {
-                var donor = await _context.Donors.FirstOrDefaultAsync(d => d.UserId == userId);
-                if (donor != null)
-                {
-                    donor.BloodTypeId = model.BloodTypeId!.Value;
-                }
-            }
-
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Profile updated successfully.";
-            return RedirectToAction("Profile");
-        }
-
     }
 }

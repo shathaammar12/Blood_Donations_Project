@@ -21,5 +21,12 @@ namespace Blood_Donations_Project.ViewModels
 
         [Required]
         public int RoleId { get; set; }
+
+        [DataType(DataType.Date)]
+        public DateTime DateOfBirth { get; set; }
+
+        public string? HealthStatus { get; set; }
+
+        public int? BloodTypeId { get; set; }
     }
 }

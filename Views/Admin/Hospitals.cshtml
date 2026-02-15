@@ -1,7 +1,7 @@
-﻿@model List<Blood_Donations_Project.ViewModels.AdminUserRow>
+﻿@model List<Blood_Donations_Project.Models.User>
 
 @{
-    ViewData["Title"] = "Donors";
+    ViewData["Title"] = "Hospitals";
 }
 
 <style>
@@ -84,20 +84,27 @@
 
 <div class="container mt-4">
 
-    <!-- Header -->
     <div class="d-flex align-items-center justify-content-between mb-3">
         <div>
             <h2 class="mb-1" style="color:var(--wine); font-weight:800;">
-                <i class="bi bi-people me-2"></i> Users Management
+                <i class="bi bi-hospital me-2"></i> Hospital Management
             </h2>
-            <div class="text-muted">Donors list</div>
+            <div class="text-muted">Hospitals list</div>
         </div>
 
-        <a class="btn btn-wine px-4 text-white"
-           asp-controller="Admin"
-           asp-action="Dashboard">
-            Back
-        </a>
+        <div class="d-flex gap-2">
+            <a class="btn btn-outline-wine"
+               asp-controller="Admin"
+               asp-action="Dashboard">
+                 Back
+            </a>
+
+            <a class="btn btn-wine"
+               asp-controller="Admin"
+               asp-action="AddHospital">
+                <i class="bi bi-plus-circle me-1"></i> Add New Hospital
+            </a>
+        </div>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
@@ -111,20 +118,27 @@
                     aria-label="Close"></button>
         </div>
     }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-wine-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            @TempData["Error"]
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    aria-label="Close"></button>
+        </div>
+    }
 
     <div class="card card-wine">
         <div class="card-header d-flex align-items-center justify-content-between">
             <h5 class="mb-0">
-                <i class="bi bi-person-badge me-2"></i> All Donors
+                <i class="bi bi-building me-2"></i> All Hospitals
             </h5>
             <span class="badge text-white px-3 py-2" style="background:linear-gradient(135deg,var(--wine),var(--wine-2));">
-                <i class="bi bi-droplet-half me-1"></i> Donors
+                <i class="bi bi-hospital me-1"></i> Hospitals
             </span>
         </div>
-
-        <form id="antiForgeryForm">
-            @Html.AntiForgeryToken()
-        </form>
 
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -135,9 +149,8 @@
                             <th>Full Name</th>
                             <th>UserName</th>
                             <th>Email</th>
-                            <th>Mobile No</th>
+                            <th>Mobile</th>
                             <th>Address</th>
-                            <th style="width:120px;">Blood Type</th>
                             <th class="text-center" style="width:120px;">Actions</th>
                         </tr>
                     </thead>
@@ -146,44 +159,29 @@
                         @if (Model != null && Model.Any())
                         {
                             int sn = 1;
-
-                            foreach (var u in Model)
+                            foreach (var h in Model)
                             {
                                 <tr>
                                     <td class="fw-semibold">@sn</td>
-                                    <td>@(u.FullName ?? "-")</td>
-                                    <td>@(u.UserName ?? "-")</td>
-                                    <td>@(u.Email ?? "-")</td>
-                                    <td>@(u.MobileNo ?? "-")</td>
-                                    <td>@(u.Address ?? "-")</td>
-
-                                    <td>
-                                        @if (!string.IsNullOrWhiteSpace(u.BloodTypeName))
-                                        {
-                                            <span class="badge text-white"
-                                                  style="background:linear-gradient(135deg,var(--wine),var(--wine-2));">
-                                                @u.BloodTypeName
-                                            </span>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">-</span>
-                                        }
-                                    </td>
+                                    <td>@(h.FullName ?? "-")</td>
+                                    <td>@(h.UserName ?? "-")</td>
+                                    <td>@(h.Email ?? "-")</td>
+                                    <td>@(h.MobileNo ?? "-")</td>
+                                    <td>@(h.Address ?? "-")</td>
 
                                     <td class="text-center">
                                         <a class="btn btn-wine btn-icon me-1"
                                            title="Edit"
                                            asp-controller="Admin"
-                                           asp-action="EditUser"
-                                           asp-route-id="@u.UserId">
+                                           asp-action="EditHospital"
+                                           asp-route-id="@h.UserId">
                                             <i class="bi bi-pencil-square"></i>
                                         </a>
 
                                         <button type="button"
                                                 class="btn btn-outline-wine btn-icon"
                                                 title="Delete"
-                                                onclick="confirmDelete(@u.UserId)">
+                                                onclick="confirmDelete(@h.UserId)">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </td>
@@ -195,10 +193,10 @@
                         else
                         {
                             <tr>
-                                <td colspan="8" class="text-center py-4">
+                                <td colspan="7" class="text-center py-4">
                                     <div class="alert alert-wine mb-0 d-inline-flex align-items-center gap-2">
                                         <i class="bi bi-info-circle"></i>
-                                        No donors found.
+                                        No hospitals found.
                                     </div>
                                 </td>
                             </tr>
@@ -209,30 +207,33 @@
             </div>
         </div>
     </div>
+
+    <form id="afForm" method="post">
+        @Html.AntiForgeryToken()
+    </form>
+
 </div>
 
 @section Scripts {
     <script>
-        function confirmDelete(id) {
-            if (!confirm("Are you sure you want to delete this donor?")) return;
-
-            fetch('/Admin/DeleteUser?id=' + id, {
-                method: 'POST',
-                headers: {
-                    'RequestVerificationToken':
-                        document.querySelector('input[name="__RequestVerificationToken"]').value
-                }
-            })
-                .then(r => r.json())
-                .then(res => {
-                    alert(res.message);
-
-                    if (res.success) {
-                        location.reload();
-                    }
-                })
-                .catch(() => alert("Error deleting donor"));
+        function getAntiForgeryToken() {
+            const input = document.querySelector('#afForm input[name="__RequestVerificationToken"]');
+            return input ? input.value : '';
         }
 
+        function confirmDelete(id) {
+            if (!confirm("Are you sure you want to delete this hospital?")) return;
+
+            fetch('/Admin/DeleteHospital?id=' + id, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': getAntiForgeryToken()
+                }
+            })
+                .then(() => {
+                    window.location.reload();
+                })
+                .catch(() => alert("Error deleting hospital"));
+        }
     </script>
 }

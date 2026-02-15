@@ -3,58 +3,100 @@
     ViewData["Title"] = "Login";
 }
 
-<div class="row justify-content-center mt-5">
-    <div class="col-md-5">
-        <div class="card shadow border-danger border-2">
-            <div class="card-body">
-                <h3 class="card-title text-center mb-4">Login</h3>
+<div class="auth-page">
+    <div class="container">
+        <div class="auth-card row g-0">
 
-                <form asp-controller="Account" asp-action="Login" method="post">
+            <div class="col-lg-6 auth-left d-flex align-items-end">
+                <div class="p-4 p-lg-5">
+                    <div class="auth-brand-badge mb-3">
+                        <i class="bi bi-droplet-half"></i>
+                        <span>Blood Donation System</span>
+                    </div>
+
+                    <h1 class="auth-slogan font-special">
+                        Your Blood Can Bring Smile In Any One Person Face
+                    </h1>
+
+                    <p class="auth-sub mb-0">
+                        Sign in to manage requests, availability, and users in a clean and secure way.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-lg-6 auth-right">
+                <h3 class="auth-title">Login</h3>
+                <p class="auth-muted mb-4">Welcome back!</p>
+
+                <form asp-controller="Account" asp-action="Login" method="post" class="auth-form">
                     @Html.AntiForgeryToken()
+
+                    @if (!ViewData.ModelState.IsValid &&
+                    ViewData.ModelState.Values.Any(v => v.Errors.Count > 0))
+                    {
+                        <div class="alert alert-danger rounded-3 py-2 mb-3">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            Invalid email or password.
+                        </div>
+                    }
+
+
                     <div class="mb-3">
                         <label asp-for="Email" class="form-label">Email</label>
-                        <input asp-for="Email" class="form-control" placeholder="Enter your email">
-                        <span asp-validation-for="Email" class="text-danger"></span>
+                        <input asp-for="Email"
+                               class="form-control @(ViewData.ModelState["Email"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                               placeholder="Enter your email"
+                               autocomplete="username" />
+                        <span asp-validation-for="Email" class="invalid-feedback"></span>
                     </div>
 
                     <div class="mb-3">
                         <label asp-for="Password" class="form-label">Password</label>
-                        <input asp-for="Password" class="form-control" placeholder="Enter your password">
-                        <span asp-validation-for="Password" class="text-danger"></span>
+                        <input asp-for="Password"
+                               class="form-control @(ViewData.ModelState["Password"]?.Errors.Count > 0 ? "is-invalid" : "")"
+                               placeholder="Enter your password"
+                               autocomplete="current-password" />
+                        <span asp-validation-for="Password" class="invalid-feedback"></span>
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center mb-3">
-
                         <div class="form-check">
-                            <input asp-for="RememberMe"
-                                   class="form-check-input text-danger border-danger"
-                                   type="checkbox"
-                                   id="rememberMe">
-
-                            <label asp-for="RememberMe"
-                                   class="form-check-label"
-                                   for="rememberMe">
+                            <input asp-for="RememberMe" class="form-check-input" type="checkbox" id="rememberMe">
+                            <label asp-for="RememberMe" class="form-check-label" for="rememberMe">
                                 Remember Me
                             </label>
                         </div>
 
                         <a asp-controller="Account" asp-action="ForgotPassword"
-                           class="text-danger fw-bold text-decoration-underline">
+                           class="link-wine fw-semibold text-decoration-underline">
                             Forgot Password?
                         </a>
-
-
                     </div>
-                    
-                    <button type="submit" class="btn btn-danger w-100">Login</button>
+
+                    <button type="submit" class="btn btn-wine w-100 text-white">
+                         Login
+                    </button>
                 </form>
 
                 <div class="text-center mt-3">
-                    <span>Don't have an account?</span>
-                    <a asp-action="Register" class="text-danger fw-bold">Register</a>
+                    <span class="text-muted">Don't have an account?</span>
+                    <a asp-action="Register" class="link-wine fw-bold ms-1">Register</a>
                 </div>
-
             </div>
+
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var firstError = document.querySelector(".is-invalid");
+            if (firstError) {
+                firstError.focus();
+            }
+        });
+    </script>
+}
