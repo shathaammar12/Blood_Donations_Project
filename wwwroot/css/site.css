@@ -23,13 +23,6 @@ body {
     border-color: rgba(176, 28, 44, .55);
 }
 
-:root {
-    --wine: #5A0F1B;
-    --wine2: #7a1526;
-    --gold: #D7B46A;
-    --softWhite: rgba(255,255,255,.92);
-}
-
 .auth-page {
     min-height: calc(100vh - 0px);
     display: flex;
@@ -403,4 +396,255 @@ input[type="number"] {
         box-shadow: 0 0 0 .2rem rgba(90,15,27,.20) !important;
     }
 
+/* Profile Page */
+.profile-card {
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(90,15,27,.15);
+    box-shadow: 0 12px 40px rgba(0,0,0,.08);
+}
+
+.profile-header {
+    background: linear-gradient(135deg, var(--wine), var(--wine-2));
+    color: #fff;
+    padding: 16px 20px;
+}
+
+    .profile-header h5 {
+        margin: 0;
+        font-weight: 600;
+    }
+
+.alert-wine-info {
+    background: linear-gradient(135deg, rgba(90,15,27,.08), rgba(90,15,27,.03));
+    border: 1px solid rgba(90,15,27,.25);
+    color: var(--wine);
+    border-radius: 14px;
+    font-weight: 500;
+}
+
+    .alert-wine-info .btn-close {
+        filter: invert(.35);
+    }
+
+/* Inventory Page */
+.btn-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+    border-radius: 8px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.units-input {
+    max-width: 80px;
+    height: 32px;
+    font-size: 14px;
+    padding: 4px 8px;
+}
+
+    .units-input:focus {
+        border-color: var(--wine);
+        box-shadow: 0 0 0 .2rem rgba(90,15,27,.18);
+    }
+
+
+/* Register Page */
+.auth-form-scroll {
+    overflow-y: auto;
+    padding-right: 6px;
+}
+
+    .auth-form-scroll::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .auth-form-scroll::-webkit-scrollbar-thumb {
+        background: rgba(90,15,27,.25);
+        border-radius: 10px;
+    }
+
+    .auth-form-scroll::-webkit-scrollbar-track {
+        background: rgba(90,15,27,.06);
+        border-radius: 10px;
+    }
+
+@media (min-width: 992px) {
+    .auth-card {
+        height: 90vh;
+        max-height: 90vh;
+    }
+
+    .auth-right {
+        height: 90vh;
+        overflow: hidden;
+        padding: 22px 28px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .auth-left {
+        height: 90vh;
+    }
+
+    .auth-form-scroll {
+        flex: 1;
+        max-height: calc(90vh - 120px);
+    }
+
+    .auth-form .mb-3 {
+        margin-bottom: .4rem !important;
+    }
+
+    .auth-form .form-control,
+    .auth-form .form-select {
+        height: 34px !important;
+        font-size: 0.83rem !important;
+        padding: .3rem .55rem !important;
+    }
+
+    .auth-form .form-label {
+        font-size: 0.82rem !important;
+        margin-bottom: .2rem !important;
+    }
+
+    .auth-form textarea.form-control {
+        height: 44px !important;
+        font-size: 0.83rem !important;
+        padding: .3rem .55rem !important;
+        resize: none;
+    }
+
+    .auth-title {
+        font-size: 1.1rem;
+        margin-bottom: .2rem;
+    }
+
+    .auth-muted {
+        font-size: 0.85rem;
+        margin-bottom: .7rem !important;
+    }
+
+    .btn-wine {
+        padding: .45rem .7rem !important;
+        font-size: 0.88rem !important;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .auth-page {
+        display: block;
+        padding: 24px 0;
+    }
+
+    .auth-card {
+        height: auto;
+    }
+
+    .auth-right {
+        height: auto;
+        overflow: visible;
+        display: block;
+    }
+
+    .auth-form-scroll {
+        max-height: none;
+        overflow: visible;
+        padding-right: 0;
+    }
+}
+
+/* Large icon buttons */
+.btn-icon-lg {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    padding: 0;
+}
+
+/* Medium icon buttons */
+.btn-icon-md {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    padding: 0;
+}
+
+/* Admin Dashboard */
+.stat-card-gradient {
+    border-radius: 20px;
+    background: linear-gradient(135deg,var(--wine),var(--wine-2));
+    color: #fff;
+    padding: 26px;
+    text-align: center;
+    box-shadow: 0 15px 35px rgba(90,15,27,.25);
+    transition: all .25s ease;
+}
+
+    .stat-card-gradient:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 45px rgba(90,15,27,.35);
+    }
+
+    .stat-card-gradient i {
+        opacity: .85;
+    }
+
+.section-title {
+    font-weight: 800;
+    letter-spacing: .5px;
+    color: var(--wine);
+    margin-bottom: 1.8rem;
+}
+
+/* Management Cards */
+.management-card {
+    border-radius: 20px;
+    border: 1px solid var(--wine-border);
+    box-shadow: 0 12px 35px rgba(0,0,0,.06);
+    transition: all .25s ease;
+}
+
+    .management-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 18px 45px rgba(0,0,0,.12);
+    }
+
+    .management-card .card-header {
+        background: linear-gradient(135deg,var(--wine),var(--wine-2));
+        color: #fff;
+        font-weight: 600;
+    }
+
+.card-wine .card-header {
+    font-weight: 600;
+}
+
+.table-wine tbody tr {
+    transition: background .2s ease;
+}
+
+    .table-wine tbody tr:hover {
+        background: rgba(90,15,27,.05);
+    }
+
+.badge-wine {
+    background: linear-gradient(135deg,var(--wine),var(--wine-2));
+    border-radius: 10px;
+    padding: 6px 10px;
+    font-weight: 500;
+}
+
+.container > h2.section-title {
+    margin-bottom: 2rem;
+}
 

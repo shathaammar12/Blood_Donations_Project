@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Blood_Donations_Project.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace Blood_Donations_Project.ViewModels
 {
@@ -28,5 +29,6 @@ namespace Blood_Donations_Project.ViewModels
         public string? HealthStatus { get; set; }
 
         public int? BloodTypeId { get; set; }
+        public string? Gender { get; set; }
     }
 }

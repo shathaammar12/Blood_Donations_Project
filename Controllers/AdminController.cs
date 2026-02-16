@@ -171,13 +171,12 @@ namespace Blood_Donations_Project.Controllers
                     Email = u.Email,
                     MobileNo = u.MobileNo,
                     Address = u.Address,
-
-                    RoleName = u.Role != null ? u.Role.RoleName : null,
-
-                    BloodTypeName = u.Donors
-                        .Select(d => d.BloodType.TypeName)
-                        .FirstOrDefault()
+                    DateOfBirth = u.DateOfBirth,
+                    Gender = u.Gender,
+                    BloodTypeName = u.Donors.Select(d => d.BloodType.TypeName).FirstOrDefault(),
+                    HealthStatus = u.Donors.Select(d => d.HealthStatus).FirstOrDefault()
                 })
+
                 .OrderBy(u => u.UserId)
                 .ToListAsync();
 
@@ -212,7 +211,8 @@ namespace Blood_Donations_Project.Controllers
                 Address = user.Address,
                 DateOfBirth = user.DateOfBirth,
                 HealthStatus = donor.HealthStatus,
-                BloodTypeId = donor.BloodTypeId
+                BloodTypeId = donor.BloodTypeId,
+                Gender = user.Gender
             };
 
             ViewBag.BloodTypes = await _context.BloodTypes
@@ -256,13 +256,13 @@ namespace Blood_Donations_Project.Controllers
 
             donor.HealthStatus = model.HealthStatus;
             donor.BloodTypeId = model.BloodTypeId;
+            user.Gender = model.Gender;
 
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Donor updated successfully.";
             return RedirectToAction(nameof(Users));
         }
-
 
         [HttpPost]
         [ValidateAntiForgeryToken]

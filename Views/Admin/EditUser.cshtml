@@ -2,84 +2,8 @@
 
 @{
     ViewData["Title"] = "Edit User";
-    var roles = ViewBag.Roles as dynamic ?? new List<dynamic>();
     var bloodTypes = ViewBag.BloodTypes as IEnumerable<dynamic> ?? new List<dynamic>();
 }
-
-<style>
-    :root {
-        --wine: #5A0F1B;
-        --wine-2: #7b1626;
-        --wine-soft: rgba(90,15,27,.06);
-        --wine-border: rgba(90,15,27,.18);
-    }
-
-    body {
-        background: radial-gradient(circle at top left, rgba(90,15,27,.12), transparent 60%), linear-gradient(135deg, rgba(90,15,27,.06), rgba(90,15,27,.02));
-        background-attachment: fixed;
-    }
-
-    .card-wine {
-        border-radius: 18px;
-        overflow: hidden;
-        border: 1px solid var(--wine-border);
-        box-shadow: 0 12px 40px rgba(0,0,0,.08);
-    }
-
-        .card-wine .card-header {
-            background: linear-gradient(135deg, var(--wine), var(--wine-2));
-            color: #fff;
-            border-bottom: 0;
-        }
-
-    .text-wine {
-        color: var(--wine) !important;
-    }
-
-    .form-control, .form-select {
-        border-radius: 12px;
-        border-color: rgba(90,15,27,.25);
-    }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--wine);
-            box-shadow: 0 0 0 .2rem rgba(90,15,27,.18);
-        }
-
-    .btn-wine {
-        background: var(--wine);
-        border-color: var(--wine);
-        color: #fff;
-    }
-
-        .btn-wine:hover {
-            background: var(--wine-2);
-            border-color: var(--wine-2);
-            color: #fff;
-        }
-
-    .btn-outline-wine {
-        border: 1px solid var(--wine);
-        color: var(--wine);
-        background: transparent;
-    }
-
-        .btn-outline-wine:hover {
-            background: var(--wine);
-            border-color: var(--wine);
-            color: #fff;
-        }
-
-    .btn-icon {
-        width: 40px;
-        height: 40px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 12px;
-        padding: 0;
-    }
-</style>
 
 <div class="container mt-4">
 
@@ -115,6 +39,8 @@
                 <input type="hidden" asp-for="UserId" />
 
                 <div class="row g-3">
+
+                    <!-- Username / FullName -->
                     <div class="col-md-6">
                         <label class="form-label">UserName</label>
                         <input class="form-control" asp-for="UserName" />
@@ -127,6 +53,7 @@
                         <span class="text-danger" asp-validation-for="FullName"></span>
                     </div>
 
+                    <!-- Email / Mobile -->
                     <div class="col-md-6">
                         <label class="form-label">Email</label>
                         <input class="form-control" asp-for="Email" />
@@ -136,12 +63,34 @@
                     <div class="col-md-6">
                         <label class="form-label">Mobile No</label>
                         <input class="form-control" asp-for="MobileNo" />
+                        <span class="text-danger" asp-validation-for="MobileNo"></span>
                     </div>
 
-                    <div class="col-md-12">
+                    <!-- DOB -->
+                    <div class="col-md-6">
+                        <label class="form-label">Date of Birth</label>
+                        <input class="form-control" asp-for="DateOfBirth" type="date" />
+                        <span class="text-danger" asp-validation-for="DateOfBirth"></span>
+                    </div>
+
+                    <!-- Address -->
+                    <div class="col-md-6">
                         <label class="form-label">Address</label>
                         <input class="form-control" asp-for="Address" />
+                        <span class="text-danger" asp-validation-for="Address"></span>
                     </div>
+
+                    <!-- Gender / BloodType -->
+                    <div class="col-md-6">
+                        <label asp-for="Gender" class="form-label">Gender</label>
+                        <select asp-for="Gender" class="form-select">
+                            <option value=""> Select </option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                        <span asp-validation-for="Gender" class="text-danger"></span>
+                    </div>
+
 
                     <div class="col-md-6">
                         <label class="form-label">Blood Type</label>
@@ -155,27 +104,17 @@
                             }
                         </select>
                         <span class="text-danger" asp-validation-for="BloodTypeId"></span>
-                    </div>
+                    </div>                 
 
-
-                    <div class="col-md-6">
-                        <label class="form-label">Date of Birth</label>
-                        <input class="form-control"
-                               asp-for="DateOfBirth"
-                               type="date" />
-                        <span class="text-danger" asp-validation-for="DateOfBirth"></span>
-                    </div>
-
+                    <!-- Health -->
                     <div class="col-md-12">
                         <label class="form-label">
-                            Health Status
-                            <span class="text-muted">(optional)</span>
+                            Health Status <span class="text-muted">(optional)</span>
                         </label>
-                        <textarea class="form-control"
-                                  asp-for="HealthStatus"
-                                  rows="2"></textarea>
+                        <textarea class="form-control" asp-for="HealthStatus" rows="2"></textarea>
                         <span class="text-danger" asp-validation-for="HealthStatus"></span>
                     </div>
+
                 </div>
 
                 <div class="d-flex flex-wrap gap-2 mt-4">
@@ -183,6 +122,7 @@
                         <i class="bi bi-check2-circle me-1"></i> Save Changes
                     </button>
                 </div>
+
             </form>
         </div>
     </div>

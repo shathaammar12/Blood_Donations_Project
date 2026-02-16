@@ -5,86 +5,23 @@
 }
 
 <style>
-    :root {
-        --wine: #5A0F1B;
-        --wine-2: #7b1626;
-        --wine-soft: rgba(90,15,27,.06);
-        --wine-border: rgba(90,15,27,.18);
+    #healthStatusModal .card-header {
+        flex-wrap: wrap;
+        gap: .5rem;
     }
 
-    body {
-        background: radial-gradient(circle at top left, rgba(90,15,27,.12), transparent 60%), linear-gradient(135deg, rgba(90,15,27,.06), rgba(90,15,27,.02));
-        background-attachment: fixed;
-    }
-
-    .card-wine {
-        border-radius: 18px;
-        overflow: hidden;
-        border: 1px solid var(--wine-border);
-        box-shadow: 0 12px 40px rgba(0,0,0,.08);
-    }
-
-        .card-wine .card-header {
-            background: linear-gradient(135deg, var(--wine), var(--wine-2));
-            color: #fff;
-            border-bottom: 0;
+        #healthStatusModal .card-header h5 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            flex: 1 1 auto;
+            min-width: 0;
         }
-
-    .btn-wine {
-        background: var(--wine);
-        border-color: var(--wine);
-        color: #fff;
-    }
-
-        .btn-wine:hover {
-            background: var(--wine-2);
-            border-color: var(--wine-2);
-            color: #fff;
-        }
-
-    .btn-outline-wine {
-        border: 1px solid var(--wine);
-        color: var(--wine);
-        background: transparent;
-    }
-
-        .btn-outline-wine:hover {
-            background: var(--wine);
-            border-color: var(--wine);
-            color: #fff;
-        }
-
-    .btn-icon {
-        width: 38px;
-        height: 38px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 12px;
-        padding: 0;
-    }
-
-    .alert-wine {
-        background-color: var(--wine-soft);
-        border: 1px solid rgba(90,15,27,.25);
-        color: var(--wine);
-        border-radius: 14px;
-        font-weight: 500;
-    }
-
-    .table-wine thead {
-        background: rgba(90,15,27,.08);
-        color: var(--wine);
-    }
-
-    .table-wine tbody tr:hover {
-        background: rgba(90,15,27,.04);
-    }
 </style>
 
-<div class="container mt-4">
 
-    <!-- Header -->
+<div class="container mt-4">
     <div class="d-flex align-items-center justify-content-between mb-3">
         <div>
             <h2 class="mb-1" style="color:var(--wine); font-weight:800;">
@@ -105,10 +42,7 @@
         <div class="alert alert-wine-success alert-dismissible fade show" role="alert">
             <i class="bi bi-check-circle me-2"></i>
             @TempData["SuccessMessage"]
-            <button type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert"
-                    aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
 
@@ -137,8 +71,10 @@
                             <th>Email</th>
                             <th>Mobile No</th>
                             <th>Address</th>
+                            <th style="width:140px;">Date of Birth</th>
                             <th style="width:120px;">Blood Type</th>
-                            <th class="text-center" style="width:120px;">Actions</th>
+                            <th style="width:110px;">Gender</th>
+                            <th class="text-center" style="width:170px;">Actions</th>
                         </tr>
                     </thead>
 
@@ -158,6 +94,10 @@
                                     <td>@(u.Address ?? "-")</td>
 
                                     <td>
+                                        @(u.DateOfBirth.HasValue ? u.DateOfBirth.Value.ToString("dd/MM/yyyy") : "-")
+                                    </td>
+
+                                    <td>
                                         @if (!string.IsNullOrWhiteSpace(u.BloodTypeName))
                                         {
                                             <span class="badge text-white"
@@ -171,8 +111,22 @@
                                         }
                                     </td>
 
+                                    <td>
+                                        @(u.Gender?.ToString() ?? "-")
+                                    </td>
+
                                     <td class="text-center">
-                                        <a class="btn btn-wine btn-icon me-1"
+                                        <button type="button"
+                                                class="btn btn-outline-wine btn-icon-md me-1"
+                                                title="Health Status"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#healthStatusModal"
+                                                data-name="@(u.FullName ?? u.UserName ?? "Donor")"
+                                                data-health="@((u.HealthStatus ?? "").Replace("\"", "&quot;"))">
+                                            <i class="bi bi-clipboard2-pulse"></i>
+                                        </button>
+
+                                        <a class="btn btn-outline-wine btn-icon-md me-1"
                                            title="Edit"
                                            asp-controller="Admin"
                                            asp-action="EditUser"
@@ -181,7 +135,7 @@
                                         </a>
 
                                         <button type="button"
-                                                class="btn btn-outline-wine btn-icon"
+                                                class="btn btn-wine btn-icon-md"
                                                 title="Delete"
                                                 onclick="confirmDelete(@u.UserId)">
                                             <i class="bi bi-trash"></i>
@@ -195,7 +149,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="8" class="text-center py-4">
+                                <td colspan="10" class="text-center py-4">
                                     <div class="alert alert-wine mb-0 d-inline-flex align-items-center gap-2">
                                         <i class="bi bi-info-circle"></i>
                                         No donors found.
@@ -206,6 +160,29 @@
                     </tbody>
 
                 </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Health Status Modal -->
+<div class="modal fade" id="healthStatusModal" tabindex="-1" aria-labelledby="healthStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content card-wine">
+            <div class="card-header d-flex align-items-center justify-content-between">
+                <h5 class="mb-1" id="healthStatusModalLabel">
+                    <i class="bi bi-clipboard2-pulse me-2"></i> Health Status
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-4">
+                <div class="text-muted mb-2" id="hsDonorName"></div>
+                <div class="alert alert-wine mb-0" id="hsText"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-wine" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -226,13 +203,23 @@
                 .then(r => r.json())
                 .then(res => {
                     alert(res.message);
-
-                    if (res.success) {
-                        location.reload();
-                    }
+                    if (res.success) location.reload();
                 })
                 .catch(() => alert("Error deleting donor"));
         }
 
+        const healthModal = document.getElementById('healthStatusModal');
+        if (healthModal) {
+            healthModal.addEventListener('show.bs.modal', function (event) {
+                const btn = event.relatedTarget;
+                const name = btn.getAttribute('data-name') || 'Donor';
+                const health = btn.getAttribute('data-health') || '';
+
+                document.getElementById('hsDonorName').textContent = `Donor: ${name}`;
+
+                const text = health.trim() ? health : 'No health status provided.';
+                document.getElementById('hsText').textContent = text;
+            });
+        }
     </script>
 }

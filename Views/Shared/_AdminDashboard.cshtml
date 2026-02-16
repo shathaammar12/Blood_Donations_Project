@@ -21,117 +21,60 @@
 }
 
 <style>
-    :root {
-        --wine: #5A0F1B;
-        --wine-2: #7b1626;
-        --wine-soft: rgba(90,15,27,.06);
-        --wine-border: rgba(90,15,27,.18);
+    .table-wine td .btn.btn-sm {
+        width: 34px;
+        height: 34px;
+        padding: 0 !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    body {
-        background: radial-gradient(circle at top left, rgba(90,15,27,.12), transparent 60%), linear-gradient(135deg, rgba(90,15,27,.06), rgba(90,15,27,.02));
-        background-attachment: fixed;
-    }
-
-    .section-title {
-        font-weight: 700;
-        color: var(--wine);
-        margin-bottom: 1.5rem;
-    }
-
-    .stat-card {
-        border-radius: 18px;
-        background: linear-gradient(135deg,var(--wine),var(--wine-2));
-        color: white;
-        padding: 24px;
-        text-align: center;
-        box-shadow: 0 12px 30px rgba(0,0,0,.12);
-    }
-
-    .management-card {
-        border-radius: 18px;
-        border: 1px solid var(--wine-border);
-        box-shadow: 0 10px 30px rgba(0,0,0,.08);
-    }
-
-        .management-card .card-header {
-            background: linear-gradient(135deg,var(--wine),var(--wine-2));
-            color: white;
-        }
-
-    .btn-wine {
-        background: var(--wine);
-        border-color: var(--wine);
-        color: white;
-    }
-
-        .btn-wine:hover {
-            background: var(--wine-2);
-            border-color: var(--wine-2);
-        }
-
-    .table-wine thead {
-        background: var(--wine-soft);
-        color: var(--wine);
-    }
-
-    .action-icon {
-        font-size: 1.1rem;
-        margin: 0 6px;
-        cursor: pointer;
-        transition: .2s;
-    }
-
-        .action-icon:hover {
-            transform: scale(1.15);
-        }
-
-    .btn-outline-wine {
-        border: 1px solid var(--wine);
-        color: var(--wine);
-        background: transparent;
-    }
-
-        .btn-outline-wine:hover {
-            background: var(--wine);
-            border-color: var(--wine);
-            color: #fff;
+        .table-wine td .btn.btn-sm i {
+            font-size: 1rem;
+            line-height: 1;
         }
 </style>
 
+
 <div class="container mt-4">
 
-    <h2 class="section-title">Admin Dashboard</h2>
+    <h2 class="section-title">
+        <i class="bi bi-shield-lock me-2"></i>
+        Admin Dashboard
+    </h2>
+    <div class="text-muted">Monitor system activity, manage users, and process all requests</div>
+
 
     <!-- STATISTICS -->
-    <div class="row g-4 mb-5">
+    <div class="row gx-4 gy-4 mb-5">
 
-        <div class="col-md-3">
-            <div class="stat-card">
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="stat-card-gradient h-100">
                 <i class="bi bi-droplet-fill fs-3"></i>
                 <div>Total Donations</div>
                 <h3 class="fw-bold">@totalDonations</h3>
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="stat-card">
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="stat-card-gradient h-100">
                 <i class="bi bi-clipboard-data-fill fs-3"></i>
                 <div>Total Requests</div>
                 <h3 class="fw-bold">@totalRequests</h3>
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="stat-card">
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="stat-card-gradient h-100">
                 <i class="bi bi-hospital-fill fs-3"></i>
                 <div>Total Blood Requests</div>
                 <h3 class="fw-bold">@totalBloodRequests</h3>
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="stat-card">
+        <div class="col-xl-3 col-lg-6 col-md-6">
+            <div class="stat-card-gradient h-100">
                 <i class="bi bi-person-heart fs-3"></i>
                 <div>Total Donation Requests</div>
                 <h3 class="fw-bold">@totalDonationRequests</h3>
@@ -140,371 +83,6 @@
 
     </div>
 
-    <!-- MANAGEMENT -->
-    <h3 class="section-title">Management</h3>
-
-    <div class="row g-4 mb-5">
-
-        <!-- Users Management -->
-        <div class="col-lg-4">
-            <div class="card management-card h-100">
-                <div class="card-header d-flex align-items-center gap-2">
-                    <i class="bi bi-people"></i>
-                    <span>Users Management</span>
-                </div>
-
-                <div class="card-body d-flex flex-column">
-                    <p class="text-muted mb-3">Manage donors and system users.</p>
-
-                    <a href="/Admin/Users" class="btn btn-wine w-100 mt-auto">
-                        Manage Users
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Hospital Management -->
-        <div class="col-lg-4">
-            <div class="card management-card h-100">
-                <div class="card-header d-flex align-items-center gap-2">
-                    <i class="bi bi-hospital"></i>
-                    <span>Hospital Management</span>
-                </div>
-
-                <div class="card-body d-flex flex-column">
-                    <p class="text-muted mb-3">Manage and register hospitals in the system.</p>
-
-                    <a href="/Admin/Hospitals" class="btn btn-wine w-100 mt-auto">
-                        Manage Hospitals
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <!-- Blood Availability -->
-        <div class="col-lg-4">
-            <div class="card management-card h-100">
-                <div class="card-header d-flex align-items-center gap-2">
-                    <i class="bi bi-droplet-half"></i>
-                    <span>Blood Bank Management</span>
-                </div>
-
-                <div class="card-body d-flex flex-column">
-                    <p class="text-muted mb-3">Manage blood stock availability.</p>
-
-                    <a href="/Admin/BloodAvailability" class="btn btn-wine w-100 mt-auto">
-                        Manage Blood Availability
-                    </a>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="card card-wine mb-4">
-        <div class="card-header d-flex align-items-center justify-content-between">
-            <h5 class="mb-0">
-                <i class="bi bi-sliders me-2"></i> Requests Management
-            </h5>
-            <span class="badge badge-wine text-white px-3 py-2">
-                <i class="bi bi-funnel me-1"></i> Filter
-            </span>
-        </div>
-
-        <div class="card-body p-4">
-            <form method="get"
-                  asp-controller="Admin"
-                  asp-action="Dashboard"
-                  class="row g-3 align-items-end mb-4">
-
-                <div class="col-lg-4 col-md-6">
-                    <label class="form-label text-muted small mb-1">User Role</label>
-                    <select class="form-select"
-                            name="table"
-                            id="tableSelect"
-                            onchange="onTableChanged()">
-
-                        <option value="BloodRequests"
-                                selected="@(selectedTable == "BloodRequests")">
-                            Blood Requests
-                        </option>
-
-                        <option value="DonorRequests"
-                                selected="@(selectedTable == "DonorRequests")">
-                            Donor Requests
-                        </option>
-                    </select>
-                </div>
-
-                <div class="col-lg-4 col-md-6">
-                    <label class="form-label text-muted small mb-1">Status</label>
-                    <select class="form-select"
-                            name="status"
-                            id="statusSelect">
-
-                        <option value="All" selected="@(selectedStatus == "All")">All</option>
-                        <option value="Pending" selected="@(selectedStatus == "Pending")">Pending</option>
-                        <option value="Approved" selected="@(selectedStatus == "Approved")">Approved</option>
-                        <option value="Rejected" selected="@(selectedStatus == "Rejected")">Rejected</option>
-
-                    </select>
-                </div>
-
-                <div class="col-lg-4">
-                    <button type="submit" class="btn btn-wine w-100">
-                        <i class="bi bi-check2-circle me-1"></i> Apply
-                    </button>
-                </div>
-
-            </form>
-
-
-            <!-- ================= BLOOD REQUESTS TABLE ================= -->
-            @if (selectedTable == "BloodRequests")
-            {
-                <div class="card card-wine">
-                    <div class="card-header d-flex align-items-center justify-content-between">
-                        <h6 class="mb-0">
-                            <i class="bi bi-hospital me-2"></i> Blood Requests
-                        </h6>
-                        <span class="text-white-50 small">
-                            Manage hospital blood requests
-                        </span>
-                    </div>
-
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle table-wine mb-0">
-                                <thead>
-                                    <tr>
-                                        <th style="width:70px;">SN</th>
-                                        <th>Hospital</th>
-                                        <th>Blood Type</th>
-                                        <th style="width:90px;">Qty</th>
-                                        <th style="width:120px;">Date</th>
-                                        <th style="width:120px;">Status</th>
-                                        <th class="text-center" style="width:140px;">Actions</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    @if (bloodRequests.Any())
-                                    {
-                                        int sn = 1;
-
-                                        foreach (var r in bloodRequests)
-                                        {
-                                            var st = (r.Status ?? "").Trim();
-
-                                            <tr>
-                                                <td class="fw-semibold">@sn</td>
-                                                <td>@r.UserName</td>
-                                                <td>
-                                                    <span class="badge badge-wine text-white">
-                                                        @r.BloodTypeName
-                                                    </span>
-                                                </td>
-                                                <td class="fw-semibold">@(r.Quantity ?? 0)</td>
-                                                <td class="text-muted">@FormatDate(r.RequestDate)</td>
-                                                <td>
-                                                    @if (st.Equals("Pending", StringComparison.OrdinalIgnoreCase))
-                                                    {
-                                                        <span class="badge bg-warning text-dark">Pending</span>
-                                                    }
-                                                    else if (st.Equals("Approved", StringComparison.OrdinalIgnoreCase))
-                                                    {
-                                                        <span class="badge bg-success">Approved</span>
-                                                    }
-                                                    else if (st.Equals("Rejected", StringComparison.OrdinalIgnoreCase))
-                                                    {
-                                                        <span class="badge bg-danger">Rejected</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-secondary">@(!string.IsNullOrWhiteSpace(st) ? st : "-")</span>
-                                                    }
-                                                </td>
-
-                                                <td class="text-center">
-                                                    @if (st.Equals("Pending", StringComparison.OrdinalIgnoreCase))
-                                                    {
-                                                        <button type="button"
-                                                                class="btn btn-sm btn-wine btn-approve-blood me-1"
-                                                                data-id="@r.Id"
-                                                                title="Approve">
-                                                            <i class="bi bi-check2"></i>
-                                                        </button>
-
-                                                        <button type="button"
-                                                                class="btn btn-sm btn-outline-wine btn-reject-blood"
-                                                                data-id="@r.Id"
-                                                                title="Reject">
-                                                            <i class="bi bi-x-lg"></i>
-                                                        </button>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="text-muted">—</span>
-                                                    }
-                                                </td>
-                                            </tr>
-
-                                            sn++;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <tr>
-                                            <td colspan="7" class="text-center py-4">
-                                                <div class="alert alert-wine mb-0 d-inline-flex align-items-center gap-2">
-                                                    <i class="bi bi-info-circle"></i>
-                                                    No requests.
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            }
-
-
-            <!-- ================= DONOR REQUESTS TABLE ================= -->
-            @if (selectedTable == "DonorRequests")
-            {
-                <div class="card card-wine">
-                    <div class="card-header d-flex align-items-center justify-content-between">
-                        <h6 class="mb-0">
-                            <i class="bi bi-person-heart me-2"></i> Donor Donation Requests
-                        </h6>
-                        <span class="text-white-50 small">
-                            Verify & process donor requests
-                        </span>
-                    </div>
-
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle table-wine mb-0">
-                                <thead>
-                                    <tr>
-                                        <th style="width:70px;">SN</th>
-                                        <th>Donor</th>
-                                        <th style="width:120px;">Request Date</th>
-                                        <th style="width:120px;">Status</th>
-                                        <th style="width:120px;">Decision Date</th>
-                                        <th>Processed By</th>
-                                        <th class="text-center" style="width:160px;">Actions</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    @if (donorRequests.Any())
-                                    {
-                                        int sn = 1;
-
-                                        foreach (var r in donorRequests)
-                                        {
-                                            var st = (r.Status ?? "").Trim();
-
-                                            <tr>
-                                                <td class="fw-semibold">@sn</td>
-                                                <td>@(r.User?.FullName ?? "-")</td>
-                                                <td class="text-muted">@r.RequestDate.ToString("dd/MM/yyyy")</td>
-                                                <td>
-                                                    @if (st.Equals("Pending", StringComparison.OrdinalIgnoreCase))
-                                                    {
-                                                        <span class="badge bg-warning text-dark">Pending</span>
-                                                    }
-                                                    else if (st.Equals("Approved", StringComparison.OrdinalIgnoreCase))
-                                                    {
-                                                        <span class="badge bg-success">Approved</span>
-                                                    }
-                                                    else if (st.Equals("Rejected", StringComparison.OrdinalIgnoreCase))
-                                                    {
-                                                        <span class="badge bg-danger">Rejected</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-secondary">@(!string.IsNullOrWhiteSpace(st) ? st : "-")</span>
-                                                    }
-                                                </td>
-                                                <td class="text-muted">@FormatDate(r.ApprovedDate)</td>
-                                                <td>@(r.ApprovedByNavigation?.UserName ?? "-")</td>
-
-                                                <td class="text-center">
-                                                    @if (st.Equals("Pending", StringComparison.OrdinalIgnoreCase))
-                                                    {
-                                                        var donor = r.User?.Donors?.FirstOrDefault();
-                                                        bool isVerified = donor?.IsMedicalVerified == true;
-
-                                                        if (!isVerified)
-                                                        {
-                                                            <button type="button"
-                                                                    class="btn btn-sm btn-outline-wine btn-verify-donor me-1"
-                                                                    data-userid="@r.UserId"
-                                                                    title="Verify Medical">
-                                                                <i class="bi bi-shield-check"></i>
-                                                            </button>
-
-                                                            <button type="button"
-                                                                    class="btn btn-sm btn-wine me-1"
-                                                                    disabled
-                                                                    title="Verify medical data first">
-                                                                <i class="bi bi-check2"></i>
-                                                            </button>
-                                                        }
-                                                        else
-                                                        {
-                                                            <button type="button"
-                                                                    class="btn btn-sm btn-wine btn-approve-donor me-1"
-                                                                    data-id="@r.Id"
-                                                                    title="Approve">
-                                                                <i class="bi bi-check2"></i>
-                                                            </button>
-                                                        }
-
-                                                        <button type="button"
-                                                                class="btn btn-sm btn-outline-wine btn-reject-donor"
-                                                                data-id="@r.Id"
-                                                                title="Reject">
-                                                            <i class="bi bi-x-lg"></i>
-                                                        </button>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="text-muted">—</span>
-                                                    }
-                                                </td>
-                                            </tr>
-
-                                            sn++;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <tr>
-                                            <td colspan="7" class="text-center py-4">
-                                                <div class="alert alert-wine mb-0 d-inline-flex align-items-center gap-2">
-                                                    <i class="bi bi-info-circle"></i>
-                                                    No donor requests.
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            }
-
-        </div>
-    </div>
-</div>
 
 <script>
 

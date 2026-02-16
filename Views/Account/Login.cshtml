@@ -3,7 +3,78 @@
     ViewData["Title"] = "Login";
 }
 
-<div class="auth-page">
+<style>
+  .auth-page.login-page {
+      padding: 24px 0 !important; 
+      display: flex !important;
+      align-items: center !important;
+      min-height: 100vh !important;
+  }
+
+  .login-page .auth-left,
+  .login-page .auth-left .auth-slogan,
+  .login-page .auth-left .auth-sub,
+  .login-page .auth-left .auth-brand-badge span {
+      color: #fff !important;
+      opacity: 1 !important;
+  }
+
+  @@media (min-width: 992px) {
+      .login-page .auth-card,
+      .login-page .auth-right,
+      .login-page .auth-left {
+          height: auto !important;
+          max-height: none !important;
+      }
+
+      .login-page .auth-form .form-control,
+      .login-page .auth-form .form-select {
+          height: auto !important;
+          font-size: 1rem !important;
+          padding: 11px 14px !important;
+      }
+
+      .login-page .auth-form .form-label {
+          font-size: 1rem !important;
+          margin-bottom: .5rem !important;
+      }
+
+      .login-page .btn-wine {
+          font-size: 1rem !important;
+          padding: 11px 14px !important;
+      }
+
+      .login-page .auth-title {
+          font-size: 1.85rem !important;
+          margin-bottom: .4rem !important;
+      }
+
+      .login-page .auth-muted {
+          font-size: 1rem !important;
+          margin-bottom: 1rem !important;
+      }
+
+      .login-page .auth-right {
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: center !important;
+      }
+  }
+
+  .login-page a.link-wine,
+  .login-page a.link-wine:visited,
+  .login-page a.link-wine:active,
+  .login-page a.link-wine:focus {
+      color: var(--wine2) !important;
+  }
+
+  .login-page a.link-wine:hover {
+      color: var(--wine) !important;
+  }
+</style>
+
+
+<div class="auth-page login-page">
     <div class="container">
         <div class="auth-card row g-0">
 
@@ -100,3 +171,4 @@
         });
     </script>
 }
+

@@ -115,6 +115,9 @@ namespace Blood_Donations_Project.Controllers
             if (!model.BloodTypeId.HasValue)
                 ModelState.AddModelError(nameof(model.BloodTypeId), "Blood type is required.");
 
+            if (string.IsNullOrWhiteSpace(model.Gender))
+                ModelState.AddModelError(nameof(model.Gender), "Gender is required.");
+
             if (!ModelState.IsValid)
             {
                 await LoadRegisterDropdowns();
@@ -157,7 +160,8 @@ namespace Blood_Donations_Project.Controllers
                 MobileNo = model.MobileNo,
                 Address = model.Address,
                 RoleId = donorRoleId,
-                DateOfBirth = model.DateOfBirth!.Value
+                DateOfBirth = model.DateOfBirth!.Value,
+                Gender = model.Gender
             };
 
             user.Password = hasher.HashPassword(user, model.Password);
@@ -235,7 +239,8 @@ namespace Blood_Donations_Project.Controllers
                 Email = user.Email,
                 MobileNo = user.MobileNo,
                 Address = user.Address,
-                RoleName = user.Role?.RoleName
+                RoleName = user.Role?.RoleName,
+                Gender = user.Gender,
             };
 
             if (string.Equals(roleName, "Donor", StringComparison.OrdinalIgnoreCase))
@@ -278,17 +283,27 @@ namespace Blood_Donations_Project.Controllers
                 return RedirectToAction("Profile");
             }
 
-            if (string.Equals(roleName, "Donor", StringComparison.OrdinalIgnoreCase) && !model.BloodTypeId.HasValue)
-                ModelState.AddModelError(nameof(model.BloodTypeId), "Blood type is required.");
+            bool isDonor = string.Equals(roleName, "Donor", StringComparison.OrdinalIgnoreCase);
+            bool isAdmin = string.Equals(roleName, "Admin", StringComparison.OrdinalIgnoreCase);
+
+            if (isDonor)
+            {
+                if (!model.BloodTypeId.HasValue)
+                    ModelState.AddModelError(nameof(model.BloodTypeId), "Blood type is required.");
+
+                if (string.IsNullOrWhiteSpace(model.Gender))
+                    ModelState.AddModelError(nameof(model.Gender), "Gender is required.");
+            }
 
             if (!ModelState.IsValid)
             {
-                if (string.Equals(roleName, "Donor", StringComparison.OrdinalIgnoreCase))
+                if (isDonor)
                 {
                     ViewBag.BloodTypes = await _context.BloodTypes
                         .Select(bt => new { bt.BloodTypeId, bt.TypeName })
                         .ToListAsync();
                 }
+
                 model.RoleName = roleName;
                 return View(model);
             }
@@ -302,7 +317,12 @@ namespace Blood_Donations_Project.Controllers
             user.MobileNo = model.MobileNo;
             user.Address = model.Address;
 
-            if (string.Equals(roleName, "Donor", StringComparison.OrdinalIgnoreCase))
+            if (isDonor || isAdmin)
+            {
+                user.Gender = model.Gender;
+            }
+
+            if (isDonor)
             {
                 var donor = await _context.Donors.FirstOrDefaultAsync(d => d.UserId == userId);
                 if (donor != null)

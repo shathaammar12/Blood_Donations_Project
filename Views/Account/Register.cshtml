@@ -3,151 +3,6 @@
     ViewData["Title"] = "Register";
 }
 
-<style>
-    .auth-page {
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-    }
-
-    .auth-card {
-        width: 100%;
-        overflow: hidden;
-    }
-
-    /* ===== Scroll only the form area (right side), not the whole right column ===== */
-    .auth-form-scroll {
-        overflow-y: auto;
-        padding-right: 6px;
-    }
-
-        /* Nice thin scrollbar */
-        .auth-form-scroll::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .auth-form-scroll::-webkit-scrollbar-thumb {
-            background: rgba(90,15,27,.25);
-            border-radius: 10px;
-        }
-
-        .auth-form-scroll::-webkit-scrollbar-track {
-            background: rgba(90,15,27,.06);
-            border-radius: 10px;
-        }
-
-    @@media (min-width: 992px) {
-
-        .auth-card {
-            height: 90vh;
-            max-height: 90vh;
-        }
-
-        .auth-right {
-            height: 90vh;
-            overflow: hidden; /* keep header fixed, scroll only inside box */
-            padding: 22px 28px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .auth-left {
-            height: 90vh;
-        }
-        /* This makes the scroll area take the remaining height under title */
-        .auth-form-scroll {
-            flex: 1;
-            max-height: calc(90vh - 120px); /* safe space for title + footer links */
-        }
-
-        .auth-form .mb-3 {
-            margin-bottom: .4rem !important;
-        }
-
-        .auth-form .form-control,
-        .auth-form .form-select {
-            height: 34px !important;
-            font-size: 0.83rem !important;
-            padding: .3rem .55rem !important;
-        }
-
-        .auth-form .form-label {
-            font-size: 0.82rem !important;
-            margin-bottom: .2rem !important;
-        }
-
-        .auth-form textarea.form-control {
-            height: 44px !important;
-            font-size: 0.83rem !important;
-            padding: .3rem .55rem !important;
-            resize: none;
-        }
-
-        .auth-title {
-            font-size: 1.1rem;
-            margin-bottom: .2rem;
-        }
-
-        .auth-muted {
-            font-size: 0.85rem;
-            margin-bottom: .7rem !important;
-        }
-
-        .btn-wine {
-            padding: .45rem .7rem !important;
-            font-size: 0.88rem !important;
-        }
-    }
-
-    @@media (max-width: 991.98px) {
-        .auth-page {
-            display: block;
-            padding: 24px 0;
-        }
-
-        .auth-card {
-            height: auto;
-        }
-
-        .auth-right {
-            height: auto;
-            overflow: visible;
-            display: block;
-        }
-
-        .auth-form-scroll {
-            max-height: none;
-            overflow: visible;
-            padding-right: 0;
-        }
-    }
-
-    .auth-form .form-control:focus,
-    .auth-form .form-select:focus {
-        border-color: #5A0F1B !important;
-        box-shadow: 0 0 0 0.2rem rgba(90, 15, 27, 0.25) !important;
-    }
-
-    .auth-form .form-select {
-        border-color: rgba(90, 15, 27, 0.35);
-    }
-
-    .auth-form input[type="date"].form-control:focus {
-        border-color: #5A0F1B !important;
-        box-shadow: 0 0 0 0.2rem rgba(90, 15, 27, 0.25) !important;
-    }
-
-    .auth-form .form-check-input:checked {
-        background-color: #5A0F1B !important;
-        border-color: #5A0F1B !important;
-    }
-
-    .auth-form .form-check-input:focus {
-        border-color: #5A0F1B !important;
-        box-shadow: 0 0 0 0.2rem rgba(90, 15, 27, 0.25) !important;
-    }
-</style>
-
 <div class="auth-page">
     <div class="container">
         <div class="auth-card row g-0">
@@ -158,7 +13,7 @@
                         <span>Blood Donation System</span>
                     </div>
 
-                    <h1 class="auth-slogan font-special">
+                    <h1 class="auth-slogan font-special text-white">
                         Your Blood Can Bring Smile In Any One Person Face
                     </h1>
 
@@ -238,15 +93,21 @@
                                 <span asp-validation-for="BloodTypeId" class="text-danger"></span>
                             </div>
 
-                            <div class="col-12 mb-3">
-                                <label asp-for="Address" class="form-label">Address</label>
-                                <textarea asp-for="Address"
-                                          class="form-control"
-                                          rows="2"
-                                          style="resize:none;"></textarea>
-                                <span asp-validation-for="Address" class="text-danger"></span>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Gender" class="form-label">Gender</label>
+                                <select asp-for="Gender" class="form-select">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                                <span asp-validation-for="Gender" class="text-danger"></span>
                             </div>
 
+                            <div class="col-12 mb-3">
+                                <label asp-for="Address" class="form-label">Address</label>
+                                <textarea asp-for="Address" class="form-control" rows="2"></textarea>
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
 
                             <div class="col-12 mb-3">
                                 <label asp-for="HealthStatus" class="form-label">
@@ -280,11 +141,11 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        var firstError = document.querySelector(".input-validation-error");
-        if (firstError) {
-            firstError.focus();
-        }
-    });
-</script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var firstError = document.querySelector(".input-validation-error");
+            if (firstError) {
+                firstError.focus();
+            }
+        });
+    </script>
 }

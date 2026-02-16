@@ -15,19 +15,11 @@
     int rejected = Model?.Count(x => (x.Status ?? "").Trim().Equals("Rejected", StringComparison.OrdinalIgnoreCase)) ?? 0;
 }
 
-<style>
-    .section-title {
-        font-weight: 700;
-        color: var(--wine);
-        margin-bottom: 1.5rem;
-    }
-</style>
-
 <div class="container mt-4">
 
     <div class="d-flex align-items-center justify-content-between mb-3">
         <div>
-            <h2 class="section-title">Donor Dashboard</h2>
+            <h2 class="section-title"><i class="bi bi-person-heart me-2"></i>Donor Dashboard</h2>
             <div class="text-muted">Track your donation requests and status</div>
         </div>
 
